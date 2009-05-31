@@ -76,20 +76,20 @@ anidb_result_t * anidb_session_authenticate (anidb_session_t *session,
 anidb_result_t * anidb_session_logout (anidb_session_t *session);
 
 /* ANIME */
-anidb_result_t * anidb_session_anime_by_name (anidb_session_t *session, char *name);
-anidb_result_t * anidb_session_anime_by_id (anidb_session_t *session, int id);
+anidb_result_t * anidb_session_anime_name (anidb_session_t *session, char *name);
+anidb_result_t * anidb_session_anime_id (anidb_session_t *session, int id);
 
 /* ANIMEDESC */
 anidb_result_t * anidb_session_animedesc (anidb_session_t *session, int id, int ep);
 
 /* EPISODE */
-anidb_result_t * anidb_session_episode_by_id (anidb_session_t *session, int id);
-anidb_result_t * anidb_session_episode_by_aname (anidb_session_t *session, char *name, int ep);
-anidb_result_t * anidb_session_episode_by_aid (anidb_session_t *session, int id);
+anidb_result_t * anidb_session_episode_id (anidb_session_t *session, int id);
+anidb_result_t * anidb_session_episode_name (anidb_session_t *session, char *name, int ep);
+anidb_result_t * anidb_session_episode_aid (anidb_session_t *session, int id, int ep);
 
 /* FILE */
-anidb_result_t * anidb_session_file_by_id (anidb_session_t *session, int id);
-anidb_result_t * anidb_session_file_by_ed2k (anidb_session_t *session, int size, char *ed2k);
+anidb_result_t * anidb_session_file_id (anidb_session_t *session, int id);
+anidb_result_t * anidb_session_file_ed2k (anidb_session_t *session, int size, char *ed2k);
 
 /* GROUP */
 anidb_result_t * anidb_session_group_id (anidb_session_t *session, int id);
@@ -101,10 +101,16 @@ anidb_result_t * anidb_session_groupstatus (anidb_session_t *session, int id);
 /* MYLIST */
 
 /* MYLISTADD */
+anidb_result_t * anidb_session_mylist_add_fid (anidb_session_t *session, int id);
+anidb_result_t * anidb_session_mylist_add_ed2k (anidb_session_t *session, int size, char *ed2k);
 
 /* MYLISTDEL */
+anidb_result_t * anidb_session_mylist_del_id (anidb_session_t *session, int id);
+anidb_result_t * anidb_session_mylist_del_fid (anidb_session_t *session, int id);
+anidb_result_t * anidb_session_mylist_del_ed2k (anidb_session_t *session, int size, char *ed2k);
 
 /* MYLISTSTATS */
+anidb_result_t * anidb_session_mylist_stats (anidb_session_t *session);
 
 /* VOTE */
 
@@ -135,6 +141,7 @@ void anidb_session_unref (anidb_session_t *session);
 
 /* Dict */
 anidb_dict_t * anidb_dict_new (void);
+anidb_dict_t * anidb_dict_next (anidb_dict_t *dict);
 void anidb_dict_ref (anidb_dict_t *dict);
 void anidb_dict_unref (anidb_dict_t *dict);
 
@@ -156,6 +163,7 @@ int anidb_result_get_code (anidb_result_t *result);
 int anidb_result_get_str (anidb_result_t *result, char **out);
 int anidb_result_get_int (anidb_result_t *result, int *out);
 int anidb_result_dict_get (anidb_result_t *result, char *key, char **out);
+anidb_dict_t * anidb_result_get_dict (anidb_result_t *result);
 
 
 /* Error */

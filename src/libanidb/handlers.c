@@ -51,10 +51,7 @@ handler_auth_accepted (anidb_result_t *result, char *data)
 static void
 handler_auth_logout (anidb_result_t *result, char *data)
 {
-	anidb_result_dict_set(result, "test", "hej");
-	anidb_result_dict_set(result, "test1", "hej");
-	anidb_result_dict_set(result, "test2", "hej");
-	anidb_result_dict_set(result, "test3", "hej");
+	/* pass */
 }
 
 
@@ -62,7 +59,6 @@ static void
 handler_anime (anidb_result_t *result, char *data)
 {
 	char *anime;
-
 
 	anime = data + 10;
 
@@ -87,11 +83,102 @@ handler_anime (anidb_result_t *result, char *data)
 	DICT_PART_ADD(result, anime, 18, "category_list");
 }
 
+static void
+handler_animedesc (anidb_result_t *result, char *data)
+{
+	char *desc;
+
+	desc = data + 14;
+
+	DICT_PART_ADD(result, desc, 0, "part");
+	DICT_PART_ADD(result, desc, 1, "max_parts");
+	DICT_PART_ADD(result, desc, 2, "description");
+}
+
+static void
+handler_episode (anidb_result_t *result, char *data)
+{
+	char *episode;
+
+	episode = data + 12;
+
+	DICT_PART_ADD(result, episode, 0, "eid");
+	DICT_PART_ADD(result, episode, 1, "aid");
+	DICT_PART_ADD(result, episode, 2, "length");
+	DICT_PART_ADD(result, episode, 3, "rating");
+	DICT_PART_ADD(result, episode, 4, "votes");
+	DICT_PART_ADD(result, episode, 5, "epno");
+	DICT_PART_ADD(result, episode, 6, "eng");
+	DICT_PART_ADD(result, episode, 7, "romaji");
+	DICT_PART_ADD(result, episode, 8, "kanji");
+	DICT_PART_ADD(result, episode, 9, "aired");
+}
+
+static void
+handler_file (anidb_result_t *result, char *data)
+{
+	char *file;
+
+	file = data + 9;
+
+	DICT_PART_ADD(result, file, 0, "fid");
+	DICT_PART_ADD(result, file, 1, "aid");
+	DICT_PART_ADD(result, file, 2, "eid");
+	DICT_PART_ADD(result, file, 3, "gid");
+	DICT_PART_ADD(result, file, 4, "state");
+	DICT_PART_ADD(result, file, 5, "size");
+	DICT_PART_ADD(result, file, 6, "ed2k");
+	DICT_PART_ADD(result, file, 7, "filename");
+}
+
+static void
+handler_group (anidb_result_t *result, char *data)
+{
+	char *group;
+
+	group = data + 10;
+
+	DICT_PART_ADD(result, group,  0, "gid");
+	DICT_PART_ADD(result, group,  1, "rating");
+	DICT_PART_ADD(result, group,  2, "votes");
+	DICT_PART_ADD(result, group,  3, "acount");
+	DICT_PART_ADD(result, group,  4, "fcount");
+	DICT_PART_ADD(result, group,  5, "name");
+	DICT_PART_ADD(result, group,  6, "short");
+	DICT_PART_ADD(result, group,  7, "irc_channel");
+	DICT_PART_ADD(result, group,  8, "irc_server");
+	DICT_PART_ADD(result, group,  9, "url");
+}
+
 anidb_result_handler_t anidb_handlers[] = {
 	/* AUTH */
-	{ ANIDB_LOGIN_ACCEPTED, handler_auth_accepted },
-	{ ANIDB_LOGGED_OUT,     handler_auth_logout },
+	{ ANIDB_LOGIN_ACCEPTED,    handler_auth_accepted },
+	{ ANIDB_LOGGED_OUT,        handler_auth_logout },
 
 	/* ANIME */
-	{ ANIDB_ANIME,          handler_anime },
+	{ ANIDB_ANIME,             handler_anime },
+
+	/* ANIMEDESC */
+	{ ANIDB_ANIME_DESCRIPTION, handler_animedesc },
+
+	/* EPISODE */
+	{ ANIDB_EPISODE,           handler_episode },
+
+	/* FILE */
+	{ ANIDB_FILE,              handler_file },
+
+	/* GROUP */
+	{ ANIDB_GROUP,             handler_group },
+	/* GROUPSTATUS */
+	/* MYLIST */
+	/* MYLISTADD */
+	/* MYLISTDEL */
+	/* MYLISTSTATS */
+	/* VOTE */
+	/* RANDOM */
+	/* PING */
+	/* UPTIME */
+	/* ENCODING */
+	/* SENDMSG */
+	/* USER */
 };

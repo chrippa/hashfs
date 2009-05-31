@@ -55,7 +55,7 @@ sock_send (anidb_session_t *session, char *msg, char *out)
 	send(session->socket, msg, strlen(msg) + 1, 0);
 	n = recv(session->socket, out, 1000, 0);
 
-	out[n] = '\0';
+	out[n-1] = '\0';
 
 //	strcpy(out, "200 fsdf LOGIN ACCEPTED");
 
@@ -182,6 +182,9 @@ anidb_session_cmd (anidb_session_t *session, char *cmd, ...)
 	return res;
 }
 
+
+/* AUTH */
+
 anidb_result_t *
 anidb_session_authenticate (anidb_session_t *session, char *username,
                             char *password)
@@ -194,15 +197,18 @@ anidb_session_authenticate (anidb_session_t *session, char *username,
 	                        "protover", ANIDB_PROTO_VERSION,
 	                        "client", session->clientname,
 	                        "clientver", session->clientversion,
-							"nat", "1",
-							"enc", "UTF8",
+	                        "nat", "1",
+	                        "enc", "UTF8",
 	                        NULL);
 
 	return res;
 }
 
+
+/* ANIME */
+
 anidb_result_t *
-anidb_session_anime_by_name (anidb_session_t *session, char *name)
+anidb_session_anime_name (anidb_session_t *session, char *name)
 {
 	anidb_result_t *res;
 
@@ -215,7 +221,7 @@ anidb_session_anime_by_name (anidb_session_t *session, char *name)
 }
 
 anidb_result_t *
-anidb_session_anime_by_aid (anidb_session_t *session, int id)
+anidb_session_anime_id (anidb_session_t *session, int id)
 {
 	anidb_result_t *res;
 	char aid[10];
@@ -229,6 +235,265 @@ anidb_session_anime_by_aid (anidb_session_t *session, int id)
 
 	return res;
 }
+
+
+/* ANIMEDESC */
+
+anidb_result_t *
+anidb_session_animedesc (anidb_session_t *session, int id, int n)
+{
+	anidb_result_t *res;
+	char aid[10];
+	char part[10];
+
+	sprintf(aid, "%d", id);
+	sprintf(part, "%d", n);
+
+	res = anidb_session_cmd(session, "ANIMEDESC",
+	                        "aid", aid,
+	                        "part", part,
+	                        "s", session->key,
+	                        NULL);
+
+	return res;
+}
+
+
+/* EPISODE */
+
+anidb_result_t *
+anidb_session_episode_id (anidb_session_t *session, int id)
+{
+	anidb_result_t *res;
+	char eid[10];
+
+	sprintf(eid, "%d", id);
+
+	res = anidb_session_cmd(session, "EPISODE",
+	                        "eid", eid,
+	                        "s", session->key,
+	                        NULL);
+
+	return res;
+}
+
+anidb_result_t *
+anidb_session_episode_name (anidb_session_t *session, char *name, int ep)
+{
+	anidb_result_t *res;
+	char epno[10];
+
+	sprintf(epno, "%d", ep);
+
+	res = anidb_session_cmd(session, "EPISODE",
+	                        "aname", name,
+	                        "epno", epno,
+	                        "s", session->key,
+	                        NULL);
+
+	return res;
+
+}
+
+anidb_result_t *
+anidb_session_episode_aid (anidb_session_t *session, int id, int ep)
+{
+	anidb_result_t *res;
+	char aid[10];
+	char epno[10];
+
+	sprintf(aid, "%d", id);
+	sprintf(epno, "%d", ep);
+
+	res = anidb_session_cmd(session, "EPISODE",
+	                        "aid", aid,
+	                        "epno", epno,
+	                        "s", session->key,
+	                        NULL);
+
+	return res;
+
+}
+
+
+/* FILE */
+
+anidb_result_t *
+anidb_session_file_id (anidb_session_t *session, int id)
+{
+	anidb_result_t *res;
+	char fid[10];
+
+	sprintf(fid, "%d", id);
+
+	res = anidb_session_cmd(session, "FILE",
+	                        "fid", fid,
+	                        "s", session->key,
+	                        NULL);
+
+	return res;
+}
+
+anidb_result_t *
+anidb_session_file_ed2k (anidb_session_t *session, int size, char *ed2k)
+{
+	anidb_result_t *res;
+	char siz[20];
+
+	sprintf(siz, "%d", size);
+
+	res = anidb_session_cmd(session, "FILE",
+	                        "size", siz,
+	                        "ed2k", ed2k,
+	                        "s", session->key,
+	                        NULL);
+
+	return res;
+}
+
+
+/* GROUP */
+
+anidb_result_t *
+anidb_session_group_id (anidb_session_t *session, int id)
+{
+	anidb_result_t *res;
+	char gid[10];
+
+	sprintf(gid, "%d", id);
+
+	res = anidb_session_cmd(session, "GROUP",
+	                        "gid", gid,
+	                        "s", session->key,
+	                        NULL);
+
+	return res;
+}
+
+anidb_result_t *
+anidb_session_group_name (anidb_session_t *session, char *name)
+{
+	anidb_result_t *res;
+
+	res = anidb_session_cmd(session, "GROUP",
+	                        "gname", name,
+	                        "s", session->key,
+	                        NULL);
+
+	return res;
+}
+
+
+/* GROUPSTATUS */
+anidb_result_t *
+anidb_session_groupstatus (anidb_session_t *session, int id)
+{
+
+}
+
+/* MYLIST */
+
+
+/* MYLISTADD */
+
+anidb_result_t *
+anidb_session_mylist_add_fid (anidb_session_t *session, int id)
+{
+	anidb_result_t *res;
+	char fid[10];
+
+	sprintf(fid, "%d", id);
+
+	res = anidb_session_cmd(session, "MYLISTADD",
+	                        "fid", fid,
+	                        "s", session->key,
+	                        NULL);
+
+	return res;
+}
+
+anidb_result_t *
+anidb_session_mylist_add_ed2k (anidb_session_t *session, int size, char *ed2k)
+{
+	anidb_result_t *res;
+	char siz[20];
+
+	sprintf(siz, "%d", size);
+
+	res = anidb_session_cmd(session, "MYLISTADD",
+	                        "size", siz,
+	                        "ed2k", ed2k,
+	                        "s", session->key,
+	                        NULL);
+
+	return res;
+}
+
+
+/* MYLISTDEL */
+
+anidb_result_t *
+anidb_session_mylist_del_id (anidb_session_t *session, int id)
+{
+	anidb_result_t *res;
+	char lid[10];
+
+	sprintf(lid, "%d", id);
+
+	res = anidb_session_cmd(session, "MYLISTDEL",
+	                        "lid", lid,
+	                        "s", session->key,
+	                        NULL);
+
+	return res;
+
+}
+
+anidb_result_t *
+anidb_session_mylist_del_fid (anidb_session_t *session, int id)
+{
+	anidb_result_t *res;
+	char fid[10];
+
+	sprintf(fid, "%d", id);
+
+	res = anidb_session_cmd(session, "MYLISTDEL",
+	                        "fid", fid,
+	                        "s", session->key,
+	                        NULL);
+
+	return res;
+
+}
+
+anidb_result_t *
+anidb_session_mylist_del_ed2k (anidb_session_t *session, int size, char *ed2k)
+{
+	anidb_result_t *res;
+	char siz[20];
+
+	sprintf(siz, "%d", size);
+
+	res = anidb_session_cmd(session, "MYLISTDEL",
+	                        "size", siz,
+	                        "ed2k", ed2k,
+	                        "s", session->key,
+	                        NULL);
+
+	return res;
+}
+
+
+/* MYLISTSTATS */
+
+anidb_result_t *
+anidb_session_mylist_stats (anidb_session_t *session)
+{
+
+}
+
+
+/* LOGOUT */
 
 anidb_result_t *
 anidb_session_logout (anidb_session_t *session)
@@ -287,6 +552,11 @@ anidb_dict_get (anidb_dict_t *dict, char **out)
 	return 1;
 }
 
+anidb_dict_t *
+anidb_dict_next (anidb_dict_t *dict)
+{
+	return dict->next;
+}
 
 anidb_result_t *
 anidb_result_new (int code)
@@ -421,4 +691,13 @@ anidb_result_dict_get (anidb_result_t *result, char *key, char **out)
 	}
 
 	return 0;
+}
+
+anidb_dict_t *
+anidb_result_get_dict (anidb_result_t *result)
+{
+	if (result->type != ANIDB_RESULT_DICT)
+		return NULL;
+
+	return result->value.dict;
 }
