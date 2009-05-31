@@ -1,0 +1,29 @@
+# vim: set fileencoding=utf-8 filetype=python :
+
+files = """
+handlers.c
+anidb.c
+""".split()
+
+
+def set_options(opt):
+	pass
+
+def configure(conf):
+	return True
+
+def build(bld):
+	import Options
+
+	defines = []
+	if Options.options.debug:
+		defines += ['DEBUG']
+
+	obj = bld.new_task_gen(
+		features = 'cc cshlib',
+		target = 'anidb',
+		source = files,
+		defines = defines,
+		ccflags = ['-std=gnu99', '-g'],
+		install_path = '${PREFIX}/lib'
+	)

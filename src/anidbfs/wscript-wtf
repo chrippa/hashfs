@@ -1,0 +1,42 @@
+# vim: set fileencoding=utf-8 filetype=python :
+
+anidbfs = """
+anidbfs.c
+""".split()
+
+anidbfs-update = """
+anidbfs-update.c
+""".split()
+
+
+def set_options(opt):
+	pass
+
+def configure(conf):
+	import Options
+
+	conf.env['CCFLAGS_c99'] = '-std=c99'
+
+	if Options.options.debug:
+		conf.env['CCFLAGS_debug'] = '-DDEBUG'
+
+	for pkg in ['fuse']:
+		if not conf.check_cfg(package = pkg, args = '--cflags --libs', uselib_store = pkg):
+			return False
+
+	return True
+
+def build(bld):
+	obj = bld.new_task_gen('cc', 'program')
+	obj.target = 'anidbfs'
+	obj.source = files
+	obj.uselib = 'c99 debug fuse'
+	obj.install_path = '${PREFIX}/bin'
+
+	obj = bld.new_task_gen('cc', 'program')
+	obj.target = 'anidbfs-update'
+	obj.includes = '. ../anidblib'
+	obj.source = files
+	obj.uselib = 'c99 debug'
+	obj.uselib_local = 'libanidb'
+	obj.install_path = '${PREFIX}/bin'

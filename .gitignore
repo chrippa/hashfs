@@ -1,0 +1,8 @@
+_build_
+.waf*
+.lock-wscript
+*.pyc
+*.swp
+*~
+*.orig
+*.rej

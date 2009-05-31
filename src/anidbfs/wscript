@@ -1,0 +1,43 @@
+# vim: set fileencoding=utf-8 filetype=python :
+
+anidbfs = ['anidbfs.c']
+anidbfs_update = ['anidbfs-update.c']
+
+def set_options(opt):
+	pass
+
+def configure(conf):
+	for pkg in ['fuse']:
+		if not conf.check_cfg(package = pkg, args = '--cflags --libs', uselib_store = pkg):
+			return False
+
+	return True
+
+def build(bld):
+	import Options
+
+	defines = []
+
+	if Options.options.debug:
+		defines += ['DEBUG']
+
+	obj = bld.new_task_gen(
+		features = 'cc cprogram',
+		source = anidbfs,
+		target = 'anidbfs',
+		uselib = 'fuse',
+		install_path = '${PREFIX}/bin',
+		ccflags = ['-std=c99'],
+		defines = defines
+	)
+
+	obj = bld.new_task_gen(
+		features = 'cc cprogram',
+		source = anidbfs_update,
+		target = 'anidbfs-update',
+		includes = '. ../libanidb',
+		install_path = '${PREFIX}/bin',
+		uselib_local = 'anidb',
+		ccflags = ['-std=c99'],
+		defines = defines
+	)
