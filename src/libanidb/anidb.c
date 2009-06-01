@@ -328,6 +328,8 @@ anidb_session_file_id (anidb_session_t *session, int id)
 
 	res = anidb_session_cmd(session, "FILE",
 	                        "fid", fid,
+	                        "fcode", "123682590",
+	                        "acode", "75435779",
 	                        "s", session->key,
 	                        NULL);
 
@@ -345,6 +347,8 @@ anidb_session_file_ed2k (anidb_session_t *session, int size, char *ed2k)
 	res = anidb_session_cmd(session, "FILE",
 	                        "size", siz,
 	                        "ed2k", ed2k,
+	                        "fcode", "123682590",
+	                        "acode", "75435779",
 	                        "s", session->key,
 	                        NULL);
 

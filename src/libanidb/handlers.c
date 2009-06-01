@@ -121,14 +121,43 @@ handler_file (anidb_result_t *result, char *data)
 
 	file = data + 9;
 
-	DICT_PART_ADD(result, file, 0, "fid");
-	DICT_PART_ADD(result, file, 1, "aid");
-	DICT_PART_ADD(result, file, 2, "eid");
-	DICT_PART_ADD(result, file, 3, "gid");
-	DICT_PART_ADD(result, file, 4, "state");
-	DICT_PART_ADD(result, file, 5, "size");
-	DICT_PART_ADD(result, file, 6, "ed2k");
-	DICT_PART_ADD(result, file, 7, "filename");
+	DICT_PART_ADD(result, file,  0, "fid");
+	DICT_PART_ADD(result, file,  1, "aid");
+	DICT_PART_ADD(result, file,  2, "eid");
+	DICT_PART_ADD(result, file,  3, "gid");
+	DICT_PART_ADD(result, file,  4, "lid");
+	DICT_PART_ADD(result, file,  5, "state");
+	DICT_PART_ADD(result, file,  6, "size");
+	DICT_PART_ADD(result, file,  7, "ed2k");
+	DICT_PART_ADD(result, file,  8, "md5");
+	DICT_PART_ADD(result, file,  9, "sha1");
+	DICT_PART_ADD(result, file, 10, "crc32");
+	DICT_PART_ADD(result, file, 11, "dub");
+	DICT_PART_ADD(result, file, 12, "sub");
+	DICT_PART_ADD(result, file, 13, "quality");
+	DICT_PART_ADD(result, file, 14, "source");
+	DICT_PART_ADD(result, file, 15, "audio");
+	DICT_PART_ADD(result, file, 16, "video");
+	DICT_PART_ADD(result, file, 17, "resolution");
+	DICT_PART_ADD(result, file, 18, "ext");
+	DICT_PART_ADD(result, file, 19, "duration");
+
+	DICT_PART_ADD(result, file, 20, "group_name");
+	DICT_PART_ADD(result, file, 21, "group_short");
+
+	DICT_PART_ADD(result, file, 22, "ep_number");
+	DICT_PART_ADD(result, file, 23, "ep_eng");
+	DICT_PART_ADD(result, file, 24, "ep_romaji");
+	DICT_PART_ADD(result, file, 25, "ep_kanji");
+
+	DICT_PART_ADD(result, file, 26, "anime_totalep");
+	DICT_PART_ADD(result, file, 27, "anime_lastep");
+	DICT_PART_ADD(result, file, 28, "anime_year");
+	DICT_PART_ADD(result, file, 29, "anime_type");
+	DICT_PART_ADD(result, file, 30, "anime_romaji");
+	DICT_PART_ADD(result, file, 31, "anime_kanji");
+	DICT_PART_ADD(result, file, 32, "anime_eng");
+	DICT_PART_ADD(result, file, 33, "anime_categories");
 }
 
 static void

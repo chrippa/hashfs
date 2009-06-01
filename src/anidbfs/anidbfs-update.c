@@ -91,7 +91,8 @@ dump_file (anidb_session_t *session, int id)
 {
 	anidb_result_t *res;
 
-	res = anidb_session_file_ed2k(session, 44255118, "fa8313487b58f37f72500e8c5afeb3bf");
+//	res = anidb_session_file_ed2k(session, 44255118, "fa8313487b58f37f72500e8c5afeb3bf");
+	res = anidb_session_file_id(session, id);
 
 	if (anidb_result_get_code(res) == ANIDB_FILE) {
 		dump_result(res);
@@ -142,7 +143,7 @@ main (int argc, char *argv[])
 		dump_group(session, "Chrippa Crapsubs");
 		dump_animedesc(session, 23, 0);
 		dump_episode(session, 21346);
-		dump_file(session, 92739);
+		dump_file(session, 43698);
 
 		dump_result(anidb_session_logout(session));
 	}
