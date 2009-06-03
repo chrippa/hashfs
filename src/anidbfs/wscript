@@ -1,13 +1,13 @@
 # vim: set fileencoding=utf-8 filetype=python :
 
-anidbfs = ['anidbfs.c']
-anidbfs_update = ['anidbfs-update.c']
+anidbfs = ['anidbfs.c', 'util.c']
+anidbfs_update = ['anidbfs-update.c', 'util.c']
 
 def set_options(opt):
 	pass
 
 def configure(conf):
-	for pkg in ['fuse']:
+	for pkg in ['fuse', 'openssl']:
 		if not conf.check_cfg(package = pkg, args = '--cflags --libs', uselib_store = pkg):
 			return False
 
@@ -27,7 +27,7 @@ def build(bld):
 		target = 'anidbfs',
 		uselib = 'fuse',
 		install_path = '${PREFIX}/bin',
-		ccflags = ['-std=c99'],
+		ccflags = ['-std=gnu99'],
 		defines = defines
 	)
 
@@ -37,7 +37,8 @@ def build(bld):
 		target = 'anidbfs-update',
 		includes = '. ../libanidb',
 		install_path = '${PREFIX}/bin',
+		uselib = 'openssl',
 		uselib_local = 'anidb',
-		ccflags = ['-std=c99'],
+		ccflags = ['-std=gnu99'],
 		defines = defines
 	)

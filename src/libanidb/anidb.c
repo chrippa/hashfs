@@ -50,16 +50,14 @@ sock_send (anidb_session_t *session, char *msg, char *out)
 {
 	int n;
 
-	printf("send: '%s'\n", msg);
+//	printf("send: '%s'\n", msg);
 
 	send(session->socket, msg, strlen(msg) + 1, 0);
 	n = recv(session->socket, out, 1000, 0);
 
 	out[n-1] = '\0';
 
-//	strcpy(out, "200 fsdf LOGIN ACCEPTED");
-
-	printf("recv: '%s'\n", out);
+//	printf("recv: '%s'\n", out);
 }
 
 anidb_session_t *

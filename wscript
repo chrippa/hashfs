@@ -21,7 +21,7 @@ def configure(conf):
 	conf.check_tool('gcc')
 
 	for dir in subdirs:
-		print conf.sub_config(dir)
+		conf.sub_config(dir)
 
 def build(bld):
 	bld.add_subdirs(subdirs)

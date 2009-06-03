@@ -1,9 +1,6 @@
 # vim: set fileencoding=utf-8 filetype=python :
 
-files = """
-handlers.c
-anidb.c
-""".split()
+files = ['handlers.c', 'anidb.c']
 
 
 def set_options(opt):
