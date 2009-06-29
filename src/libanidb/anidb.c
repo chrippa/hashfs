@@ -335,12 +335,12 @@ anidb_session_file_id (anidb_session_t *session, int id)
 }
 
 anidb_result_t *
-anidb_session_file_ed2k (anidb_session_t *session, int size, char *ed2k)
+anidb_session_file_ed2k (anidb_session_t *session, double  size, char *ed2k)
 {
 	anidb_result_t *res;
-	char siz[20];
+	char siz[50];
 
-	sprintf(siz, "%d", size);
+	sprintf(siz, "%0.0f", size);
 
 	res = anidb_session_cmd(session, "FILE",
 	                        "size", siz,

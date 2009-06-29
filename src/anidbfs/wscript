@@ -11,6 +11,11 @@ def configure(conf):
 		if not conf.check_cfg(package = pkg, args = '--cflags --libs', uselib_store = pkg):
 			return False
 
+	for lib in ['m']:
+		if not conf.check_cc(lib = lib, uselib_store = lib):
+			return False
+
+
 	return True
 
 def build(bld):
@@ -37,7 +42,7 @@ def build(bld):
 		target = 'anidbfs-update',
 		includes = '. ../libanidb',
 		install_path = '${PREFIX}/bin',
-		uselib = 'openssl',
+		uselib = 'openssl m',
 		uselib_local = 'anidb',
 		ccflags = ['-std=gnu99'],
 		defines = defines

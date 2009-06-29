@@ -19,12 +19,6 @@ struct anidb_session_St
 	int refcount;
 };
 
-struct anidb_error_St
-{
-	int errcode;
-	char *errmsg;
-};
-
 struct anidb_dict_St
 {
 	char *key;
@@ -89,7 +83,7 @@ anidb_result_t * anidb_session_episode_aid (anidb_session_t *session, int id, in
 
 /* FILE */
 anidb_result_t * anidb_session_file_id (anidb_session_t *session, int id);
-anidb_result_t * anidb_session_file_ed2k (anidb_session_t *session, int size, char *ed2k);
+anidb_result_t * anidb_session_file_ed2k (anidb_session_t *session, double size, char *ed2k);
 
 /* GROUP */
 anidb_result_t * anidb_session_group_id (anidb_session_t *session, int id);
@@ -164,16 +158,6 @@ int anidb_result_get_str (anidb_result_t *result, char **out);
 int anidb_result_get_int (anidb_result_t *result, int *out);
 int anidb_result_dict_get (anidb_result_t *result, char *key, char **out);
 anidb_dict_t * anidb_result_get_dict (anidb_result_t *result);
-
-
-/* Error */
-anidb_error_t * anidb_error_new (void);
-void anidb_error_get_code (anidb_error_t *error, int *out);
-void anidb_error_get_str (anidb_error_t *error, char *out);
-void anidb_error_set_code (anidb_error_t *error, int code);
-void anidb_error_set_str (anidb_error_t *error, char *str);
-void anidb_session_ref (anidb_session_t *session);
-void anidb_session_unref (anidb_session_t *session);
 
 
 #define ANIDB_SERVER_HOST "api.anidb.net"

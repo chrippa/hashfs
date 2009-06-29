@@ -1,3 +1,7 @@
+#define _FILE_OFFSET_BITS 64
+#define _LARGEFILE64_SOURCE
+#define BLOCKSIZE (9500*1024)
+
 #include <stdio.h>
 #include <malloc.h>
 #include <stdlib.h>
@@ -5,123 +9,114 @@
 #include <string.h>
 #include <errno.h>
 
-#define __USE_LARGEFILE64
-#define BLOCKSIZE	(9500*1024)
-
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <math.h>
 
 #include <openssl/md4.h>
 #include <anidb.h>
 
 #include "util.h"
 
-static void anidbfs_hash_file (anidb_session_t *session, char *path);
+static void anidbfs_hash_file (anidb_session_t *session, char *path, struct stat *info);
 static void anidbfs_hash_dir (anidb_session_t *session, char *path);
-static int anidbfs_dir_list (const char *name, const struct stat *status, int flag);
 
-static unsigned long get_file_size (int fd);
 static char * ed2k_hash (char *filename);
 static void dump_result (anidb_result_t *result);
 static const char hexdigits[16] = "0123456789abcdef";
 
-
-static unsigned long
-get_file_size (int fd)
-{
-	struct stat64 info;
-
-	fstat64(fd, &info);
-
-	return (unsigned long) info.st_size;
-}
-
 static char *
 ed2k_hash (char *filename)
 {
-	unsigned long size;
-	int fd, b, j, blocks;
-	unsigned char *parthashes, *ed2k_hash;
-	char *ed2k_hash_str;
+	int fd, blocks;
+	off_t size;
+	struct stat stat;
+	char *hash_str;
+	unsigned char *hashes, *hash;
 
 	if ((fd = open(filename, O_RDONLY)) < 0) {
 		ANIDBFS_DEBUG("Failed to open file (%s)", filename);
+
 		return NULL;
 	}
 
-	size = get_file_size(fd);
+	if (fstat(fd, &stat) < 0) {
+		ANIDBFS_DEBUG("Failed to stat file (%s)", filename);
 
-	if (size <= 0) {
-		ANIDBFS_DEBUG("Error getting filesize (%s)", filename);
 		return NULL;
 	}
 
-	blocks = size / BLOCKSIZE;
+	size = stat.st_size;
 
-	if (size % BLOCKSIZE > 0)
+	blocks = (double) size / (double) BLOCKSIZE;
+
+	if (fmod((double) size, (double) BLOCKSIZE) > 0)
 		blocks++;
 
-	ed2k_hash = (unsigned char *) malloc(16);
-	ed2k_hash_str = (char *) malloc(33);
-	parthashes = (unsigned char *) malloc(blocks * 16);
+	hash = (unsigned char *) malloc(16);
+	hash_str = (char *) malloc(33);
+	hashes = (unsigned char *) malloc(blocks * 16);
 
-	if ((!parthashes) || (!ed2k_hash) || (!ed2k_hash_str) || (!filename)) {
+	if (!hash || !hashes || !hash_str || !filename) {
 		ANIDBFS_DEBUG("Failed to allocate memory (%s)", filename);
+
 		return NULL;
 	}
 
-	for (b = 0; b < blocks; b++) {
-		MD4_CTX context;
-		int len, start;
-		void *map;
+	for (int b = 0; b < blocks; b++) {
+		MD4_CTX ctx;
+		int len;
+		void *data;
+		off_t offset;
 
 		len = BLOCKSIZE;
-		if (b == blocks - 1)
-			len = size % BLOCKSIZE;
+		if (b == blocks - 1) /* Last block is smaller than BLOCKSIZE */
+			len = ceil(fmod((double) size, (double) BLOCKSIZE));
 
-		start = b * BLOCKSIZE;
-		map = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, b * BLOCKSIZE);
+		offset = (off_t) ((double) b * (double) BLOCKSIZE);
 
-		if (map == NULL) {
-			ANIDBFS_DEBUG("mmap failed (%s)", filename);
+		data = mmap(NULL, len, PROT_READ, MAP_SHARED, fd, offset);
+		if (!data) {
+			ANIDBFS_DEBUG("mmap failed to read data (%s)", filename);
+			return NULL;
 		}
 
-		MD4_Init(&context);
-		MD4_Update(&context, map, len);
-		MD4_Final(parthashes + (b * 16), &context);
+		MD4_Init(&ctx);
+		MD4_Update(&ctx, data, len);
+		MD4_Final(hashes + (b * 16), &ctx);
 
-		munmap(map, len);
-
-/*		int percent = (int) (((float) (b+1) / (float) blocks) * 100);
-		ANIDBFS_DEBUG("Hashing %s %d%%", filename, percent);*/
+		munmap(data, len);
 	}
 
 	close(fd);
 
+	/* If we have hashed more than one block,
+	   run MD4 on all the previous hashes */
 	if (blocks > 1) {
-		MD4_CTX context;
+		MD4_CTX ctx;
 
-		MD4_Init(&context);
-		MD4_Update(&context, parthashes, 16 * b);
-		MD4_Final(ed2k_hash, &context);
+		MD4_Init(&ctx);
+		MD4_Update(&ctx, hashes, 16 * blocks);
+		MD4_Final(hash, &ctx);
 	} else {
-		memcpy(ed2k_hash, parthashes, 16);
+		memcpy(hash, hashes, 16);
 	}
 
-	memset(ed2k_hash_str, 0x00, 33 * sizeof(char));
-	for (j = 0; j < 16; j++) {
-		ed2k_hash_str[(j<<1)] = hexdigits[(((ed2k_hash[j]) & 0xf0) >> 4)];
-		ed2k_hash_str[(j<<1)+1] = hexdigits[(((ed2k_hash[j]) & 0x0f))];
+	/* Convert hash to hex string format */
+	memset(hash_str, 0x00, 33 * sizeof(char));
+	for (int i = 0; i < 16; i++) {
+		hash_str[(i<<1)] = hexdigits[(((hash[i]) & 0xf0) >> 4)];
+		hash_str[(i<<1)+1] = hexdigits[(((hash[i]) & 0x0f))];
 	}
 
-	free(ed2k_hash);
-	free(parthashes);
+	free(hash);
+	free(hashes);
 
-	return ed2k_hash_str;
+	return hash_str;
 }
 
 static void
@@ -156,14 +151,14 @@ dump_result (anidb_result_t *result)
 
 			}
 
-			ANIDBFS_DEBUG(">\n");
+			ANIDBFS_DEBUG(">");
 
 			break;
 	}
 }
 
 static void
-anidbfs_hash_file (anidb_session_t *session, char *path)
+anidbfs_hash_file (anidb_session_t *session, char *path, struct stat *info)
 {
 	char *hash;
 
@@ -171,9 +166,19 @@ anidbfs_hash_file (anidb_session_t *session, char *path)
 
 	hash = ed2k_hash(path);
 
-	ANIDBFS_DEBUG("Hash: %s", hash)
+	if (hash) {
+		ANIDBFS_DEBUG("Hash: %s", hash)
 
-	free(hash);
+		anidb_result_t *res;
+
+		res = anidb_session_file_ed2k(session, (double) info->st_size, hash);
+
+		dump_result(res);
+
+		anidb_result_unref(res);
+
+		free(hash);
+	}
 }
 
 static void
@@ -181,7 +186,7 @@ anidbfs_hash_dir (anidb_session_t *session, char *path)
 {
 	DIR *dir;
 	char fullpath[9999];
-	struct stat64 info;
+	struct stat info;
 	struct dirent *entry;
 
 	ANIDBFS_LOG("Hashing dir: %s", path);
@@ -190,18 +195,20 @@ anidbfs_hash_dir (anidb_session_t *session, char *path)
 
 	if (dir) {
 		while (entry = readdir(dir)) {
-			if (entry->d_name && entry->d_name[0] != '.') {
-				sprintf(fullpath, "%s%s%s", path,
-				        (path[strlen(path)-1]=='/') ? "" : "/",
-				        entry->d_name);
 
-				stat64(fullpath, &info);
+			if (!strcmp (entry->d_name, ".") || !strcmp (entry->d_name, ".."))
+				continue;
 
-				if (S_ISDIR(info.st_mode)) {
-					anidbfs_hash_dir(session, fullpath);
-				} else if (S_ISREG(info.st_mode) || S_ISLNK(info.st_mode))  {
-					anidbfs_hash_file(session, fullpath);
-				}
+			sprintf(fullpath, "%s%s%s", path,
+			        (path[strlen(path)-1] == '/') ? "" : "/",
+			        entry->d_name);
+
+			stat(fullpath, &info);
+
+			if (S_ISDIR(info.st_mode)) {
+				anidbfs_hash_dir(session, fullpath);
+			} else if (S_ISREG(info.st_mode) || S_ISLNK(info.st_mode))  {
+				anidbfs_hash_file(session, fullpath, &info);
 			}
 		}
 
@@ -218,11 +225,11 @@ main (int argc, char *argv[])
 	char *key;
 
 	if (argc < 4) {
-		printf("Usage: %s <username> <password> <path>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <username> <password> <path>\n", argv[0]);
 		exit(0);
 	}
 
-	session = anidb_session_new("anidbfs", "1");
+	session = anidb_session_new("anidbfuse", "1");
 
 	ANIDBFS_DEBUG("Connecting to AniDB");
 	res = anidb_session_authenticate(session, argv[1], argv[2]);
