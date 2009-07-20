@@ -1,10 +1,6 @@
-
-#include <sys/stat.h>
-#include <string.h>
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <gmodule.h>
-
 
 #include "hashfs.h"
 

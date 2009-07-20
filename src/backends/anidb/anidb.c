@@ -110,8 +110,7 @@ hashfs_anidb_destroy (hashfs_backend_t *backend)
 static void
 hashfs_anidb_handle_file (hashfs_backend_t *backend, hashfs_file_t *file)
 {
-	hashfs_anidb_data_t *data
-;
+	hashfs_anidb_data_t *data;
 	gchar *hash;
 	anidb_result_t *res;
 
@@ -125,11 +124,11 @@ hashfs_anidb_handle_file (hashfs_backend_t *backend, hashfs_file_t *file)
 		if (hashfs_file_hash_ed2k(file, &hash)) {
 			HASHFS_DEBUG("ed2k hash: %s", hash);
 
-/*			res = anidb_session_file_ed2k(data->session, (gdouble) file->size, hash);
+			res = anidb_session_file_ed2k(data->session, file->size, hash);
 
 			dump_result(res);
 
-			anidb_result_unref(res);*/
+			anidb_result_unref(res);
 		}
 	}
 }

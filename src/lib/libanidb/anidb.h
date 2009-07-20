@@ -3,6 +3,7 @@
 
 #include <sys/time.h>
 
+
 enum anidb_result_type
 {
 	ANIDB_RESULT_NULL,
@@ -85,7 +86,7 @@ anidb_result_t * anidb_session_episode_aid (anidb_session_t *session, int id, in
 
 /* FILE */
 anidb_result_t * anidb_session_file_id (anidb_session_t *session, int id);
-anidb_result_t * anidb_session_file_ed2k (anidb_session_t *session, double size, char *ed2k);
+anidb_result_t * anidb_session_file_ed2k (anidb_session_t *session, int64_t size, char *ed2k);
 
 /* GROUP */
 anidb_result_t * anidb_session_group_id (anidb_session_t *session, int id);
