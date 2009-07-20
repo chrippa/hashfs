@@ -1,26 +1,29 @@
 # vim: set fileencoding=utf-8 filetype=python :
 
-files = ['handlers.c', 'anidb.c']
-
+files = ['anidb.c']
 
 def set_options(opt):
 	pass
 
 def configure(conf):
-	return True
+	pass
 
 def build(bld):
 	import Options
 
 	defines = []
+
 	if Options.options.debug:
 		defines += ['DEBUG']
 
 	obj = bld.new_task_gen(
 		features = 'cc cshlib',
-		target = 'anidb',
 		source = files,
-		defines = defines,
+		target = 'hashfs_anidb',
+		includes = '. ../../hashfs',
+		install_path = '${PREFIX}/lib/hashfs',
 		ccflags = ['-std=gnu99', '-g'],
-		install_path = '${PREFIX}/lib'
+		defines = defines,
+		uselib = 'glib-2.0',
+		uselib_local = 'anidb',
 	)

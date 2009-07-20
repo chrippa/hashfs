@@ -1,22 +1,15 @@
 # vim: set fileencoding=utf-8 filetype=python :
 
-anidbfs = ['anidbfs.c', 'util.c']
-anidbfs_update = ['anidbfs-update.c', 'util.c']
+hashfs = ['hashfs.c', 'db.c', 'ed2k.c', 'config.c', 'backend.c', 'util.c']
+hashfsmount = ['hashfsmount.c', 'util.c']
 
 def set_options(opt):
 	pass
 
 def configure(conf):
-	for pkg in ['fuse', 'openssl']:
+	for pkg in ['fuse', 'glib-2.0', 'gmodule-2.0', 'openssl']:
 		if not conf.check_cfg(package = pkg, args = '--cflags --libs', uselib_store = pkg):
-			return False
-
-	for lib in ['m']:
-		if not conf.check_cc(lib = lib, uselib_store = lib):
-			return False
-
-
-	return True
+			conf.fatal('Unable to find required library')
 
 def build(bld):
 	import Options
@@ -28,22 +21,22 @@ def build(bld):
 
 	obj = bld.new_task_gen(
 		features = 'cc cprogram',
-		source = anidbfs,
-		target = 'anidbfs',
-		uselib = 'fuse',
+		source = hashfs,
+		target = 'hashfs',
 		install_path = '${PREFIX}/bin',
-		ccflags = ['-std=gnu99'],
+		uselib = 'glib-2.0 gmodule-2.0 openssl',
+		uselib_local = 'anidb',
+		ccflags = ['-std=gnu99', '-g'],
 		defines = defines
 	)
 
 	obj = bld.new_task_gen(
 		features = 'cc cprogram',
-		source = anidbfs_update,
-		target = 'anidbfs-update',
-		includes = '. ../libanidb',
+		source = hashfsmount,
+		target = 'hashfsmount',
+		uselib = 'fuse glib-2.0',
 		install_path = '${PREFIX}/bin',
-		uselib = 'openssl m',
-		uselib_local = 'anidb',
-		ccflags = ['-std=gnu99'],
+		ccflags = ['-std=gnu99', '-g'],
 		defines = defines
 	)
+

@@ -5,8 +5,17 @@ import os
 
 srcdir = '.'
 blddir = '_build_'
+bckenddir = 'src/backends'
 
-subdirs = ['src/libanidb', 'src/anidbfs']
+def is_backend(x):
+	return os.path.exists(os.path.join(bckenddir, x, 'wscript'))
+
+hashfs = ['src/hashfs']
+libs = ['src/lib/libanidb']
+backends = [os.path.join(bckenddir, p) for p in os.listdir(bckenddir) if is_backend(p)]
+
+subdirs = hashfs + libs + backends
+
 
 def set_options(opt):
 	opt.add_option('--debug', action = 'store_true', default = True,

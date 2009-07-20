@@ -1,11 +1,12 @@
-#include "util.h"
+
 #include <sys/time.h>
 #include <string.h>
 #include <time.h>
 
+#include "hashfs.h"
 
-char *
-anidbfs_basename (char *name)
+gchar *
+hashfs_basename (char *name)
 {
   const char *base;
 
@@ -18,8 +19,8 @@ anidbfs_basename (char *name)
 	return (char *) base;
 }
 
-char *
-anidbfs_current_time (void)
+gchar *
+hashfs_current_time (void)
 {
 	char buf[256];
 	time_t tv;

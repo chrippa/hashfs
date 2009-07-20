@@ -1,6 +1,8 @@
 #ifndef _LIBANIDB_H
 #define _LIBANIDB_H
 
+#include <sys/time.h>
+
 enum anidb_result_type
 {
 	ANIDB_RESULT_NULL,
@@ -59,7 +61,7 @@ typedef struct anidb_error_St anidb_error_t;
 
 
 /* Session */
-anidb_session_t * anidb_session_new (char *name, char *version);
+anidb_session_t * anidb_session_new (char *name, char *version, int localport);
 
 /* AUTH */
 anidb_result_t * anidb_session_authenticate (anidb_session_t *session,
@@ -129,6 +131,7 @@ anidb_result_t * anidb_session_version (anidb_session_t *session);
 
 
 void anidb_session_set_key (anidb_session_t *session, char *key);
+int anidb_session_is_logged_in (anidb_session_t *session);
 void anidb_session_ref (anidb_session_t *session);
 void anidb_session_unref (anidb_session_t *session);
 

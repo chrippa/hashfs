@@ -6,7 +6,6 @@
 
 #include <fuse.h>
 
-#include "anidbfs.h"
 
 int
 main(int argc, char *argv[])

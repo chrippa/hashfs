@@ -44,7 +44,6 @@ gen_query (char *buf, ...)
 	gen_query_va(buf, aq);
 }
 
-
 static void
 sock_send (anidb_session_t *session, char *msg, char *out)
 {
@@ -61,7 +60,7 @@ sock_send (anidb_session_t *session, char *msg, char *out)
 }
 
 anidb_session_t *
-anidb_session_new (char *name, char *version)
+anidb_session_new (char *name, char *version, int localport)
 {
 	anidb_session_t *session;
 	struct protoent *protocol;
@@ -88,15 +87,17 @@ anidb_session_new (char *name, char *version)
 	   ANIDB_ERROR("Could lookup hostname: %s", ANIDB_SERVER_HOST);
 	}
 
-	local.sin_addr.s_addr = INADDR_ANY;
-	local.sin_family = AF_INET;
-	local.sin_port = htons(9999);
+	if (localport > 0) {
+		local.sin_addr.s_addr = INADDR_ANY;
+		local.sin_family = AF_INET;
+		local.sin_port = htons(localport);
 
-	rval = bind(sock, (struct sockaddr *) &local,
-	            sizeof(struct sockaddr_in));
+		rval = bind(sock, (struct sockaddr *) &local,
+		            sizeof(struct sockaddr_in));
 
-	if (rval < 0) {
-		ANIDB_ERROR("Unable to bind local port 0.0.0.0:9999");
+		if (rval < 0) {
+			ANIDB_ERROR("Unable to bind local port 0.0.0.0:%d", localport);
+		}
 	}
 
 	addr.sin_family = AF_INET;
@@ -149,6 +150,15 @@ anidb_session_set_key (anidb_session_t *session, char *key)
 	session->key = (char *) strdup(key);
 }
 
+int
+anidb_session_is_logged_in (anidb_session_t *session)
+{
+	if (session->key)
+		return 1;
+
+	return 0;
+}
+
 static anidb_result_t *
 anidb_session_cmd (anidb_session_t *session, char *cmd, ...)
 {
@@ -157,7 +167,6 @@ anidb_session_cmd (anidb_session_t *session, char *cmd, ...)
 	int code;
 	anidb_result_t *res;
 	va_list aq, ap;
-
 
 	sprintf(out, "%s ", cmd);
 
