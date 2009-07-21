@@ -52,7 +52,7 @@ void hashfs_config_property_set (const gchar *group, const gchar *key, const gch
 
 hashfs_file_t * hashfs_file_new (gchar *filename);
 gint hashfs_file_hash_ed2k (hashfs_file_t *file, gchar **out);
-gint hashfs_file_prop_get (hashfs_file_t *file, const gchar *key, gchar **out);
+gint hashfs_file_prop_lookup (hashfs_file_t *file, const gchar *key, gchar **out);
 void hashfs_file_prop_set (hashfs_file_t *file, const gchar *key, gchar *value);
 
 hashfs_backend_t * hashfs_backends_lookup (const gchar *name);
@@ -90,7 +90,7 @@ void hashfs_backend_config_lookup (hashfs_backend_t *backend, const gchar *key, 
 #ifdef DEBUG
 	#define HASHFS_DEBUG(fmt, ...) { \
 		FILE *fd; \
-		fd = g_fopen("/tmp/hashfs_debug.log", "at"); \
+		fd = g_fopen(g_build_filename(g_get_user_config_dir(), "hashfs", "debug.log", NULL), "at"); \
 		fprintf(fd, "%s  DEBUG %s:%d: ", hashfs_current_time(), __FILE__, __LINE__); \
 		fprintf(fd, fmt"\n", ## __VA_ARGS__); \
 		fclose(fd); \
