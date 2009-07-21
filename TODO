@@ -1,0 +1,8 @@
+hashfs is a work in progress
+
+TODO:
+
+* Add database support
+* Add commands to manipulate mounts
+* Add hashfsmount
+* More backends, hashdb.com etc

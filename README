@@ -1,1 +1,5 @@
-Creates a virtual file system based on data from AniDB using FUSE.
+hashfs is meant to create virtual filesystems based on metadata.
+Metadata is primarily gathered from hashing files and looking up
+metadata in different databases.
+
+hashfs is not usable at this time.
