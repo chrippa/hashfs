@@ -7,7 +7,9 @@ def set_options(opt):
 	pass
 
 def configure(conf):
-	pass
+	for lib in ['rt']:
+		if not conf.check_cc(lib = lib, uselib_store = lib):
+			conf.fatal('Unable to find required library')
 
 def build(bld):
 	import Options
@@ -22,6 +24,7 @@ def build(bld):
 		source = files,
 		defines = defines,
 		ccflags = ['-std=gnu99', '-g'],
+		uselib = 'rt',
 		install_path = False,
 		export_incdirs = '.'
 	)

@@ -6,6 +6,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <time.h>
 
 #include "anidb.h"
 #include "util.h"
@@ -42,6 +43,32 @@ gen_query (char *buf, ...)
 	va_end(ap);
 
 	gen_query_va(buf, aq);
+}
+
+
+static int
+get_ms (void)
+{
+	struct timespec ts;
+
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+
+	return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+}
+
+static void
+throttle_session (anidb_session_t *session)
+{
+	int elapsed, needtosleep;
+
+	elapsed = get_ms() - session->time;
+	needtosleep = ANIDB_THROTTLE_MS - elapsed;
+
+	if (needtosleep > 0) {
+		usleep(needtosleep * 1000);
+	}
+
+	session->time = get_ms();
 }
 
 static void
@@ -114,9 +141,8 @@ anidb_session_new (char *name, char *version, int localport)
 	}
 
 	session->socket = sock;
-	session->clientname = name;
-	session->clientversion = version;
-	session->key = NULL;
+	strncpy(session->clientname, name, sizeof(session->clientname));
+	strncpy(session->clientversion, version, sizeof(session->clientversion));
 
 	anidb_session_ref(session);
 
@@ -137,9 +163,6 @@ anidb_session_unref (anidb_session_t *session)
 	if (session->refcount == 0) {
 		close(session->socket);
 
-		if (session->key)
-			free(session->key);
-
 		free(session);
 	}
 }
@@ -147,13 +170,13 @@ anidb_session_unref (anidb_session_t *session)
 void
 anidb_session_set_key (anidb_session_t *session, char *key)
 {
-	session->key = (char *) strdup(key);
+	strncpy(session->key, key, sizeof(session->key));
 }
 
 int
 anidb_session_is_logged_in (anidb_session_t *session)
 {
-	if (session->key)
+	if (session->key[0])
 		return 1;
 
 	return 0;
@@ -174,6 +197,8 @@ anidb_session_cmd (anidb_session_t *session, char *cmd, ...)
 	va_copy(aq, ap);
 	gen_query_va(out, aq);
 	va_end(ap);
+
+	throttle_session(session);
 
 	sock_send(session, out, in);
 	code = atoi(in);

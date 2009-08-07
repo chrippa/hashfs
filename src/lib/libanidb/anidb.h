@@ -15,9 +15,11 @@ enum anidb_result_type
 struct anidb_session_St
 {
 	int socket;
-	char *clientname;
-	char *clientversion;
-	char *key;
+	int time;
+	char clientname[256];
+	char clientversion[256];
+	char key[10];
+
 
 	int refcount;
 };
@@ -167,6 +169,7 @@ anidb_dict_t * anidb_result_get_dict (anidb_result_t *result);
 #define ANIDB_SERVER_HOST "api.anidb.net"
 #define ANIDB_SERVER_PORT 9000
 #define ANIDB_PROTO_VERSION "3"
+#define ANIDB_THROTTLE_MS 2000
 
 /* Positive responses 2XX */
 
