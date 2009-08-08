@@ -76,14 +76,14 @@ sock_send (anidb_session_t *session, char *msg, char *out)
 {
 	int n;
 
-	printf("send: '%s'\n", msg);
+//	printf("send: '%s'\n", msg);
 
 	send(session->socket, msg, strlen(msg) + 1, 0);
 	n = recv(session->socket, out, 1000, 0);
 
 	out[n-1] = '\0';
 
-	printf("recv: '%s'\n", out);
+//	printf("recv: '%s'\n", out);
 }
 
 anidb_session_t *
@@ -198,8 +198,6 @@ anidb_session_cmd (anidb_session_t *session, char *cmd, ...)
 	gen_query_va(out, aq);
 	va_end(ap);
 
-	throttle_session(session);
-
 	sock_send(session, out, in);
 	code = atoi(in);
 	res = anidb_result_new(code);
@@ -244,6 +242,8 @@ anidb_session_anime_name (anidb_session_t *session, char *name)
 {
 	anidb_result_t *res;
 
+	throttle_session(session);
+
 	res = anidb_session_cmd(session, "ANIME",
 	                        "aname", name,
 	                        "s", session->key,
@@ -259,6 +259,8 @@ anidb_session_anime_id (anidb_session_t *session, int id)
 	char aid[10];
 
 	sprintf(aid, "%d", id);
+
+	throttle_session(session);
 
 	res = anidb_session_cmd(session, "ANIME",
 	                        "aid", aid,
@@ -281,6 +283,8 @@ anidb_session_animedesc (anidb_session_t *session, int id, int n)
 	sprintf(aid, "%d", id);
 	sprintf(part, "%d", n);
 
+	throttle_session(session);
+
 	res = anidb_session_cmd(session, "ANIMEDESC",
 	                        "aid", aid,
 	                        "part", part,
@@ -301,6 +305,8 @@ anidb_session_episode_id (anidb_session_t *session, int id)
 
 	sprintf(eid, "%d", id);
 
+	throttle_session(session);
+
 	res = anidb_session_cmd(session, "EPISODE",
 	                        "eid", eid,
 	                        "s", session->key,
@@ -316,6 +322,8 @@ anidb_session_episode_name (anidb_session_t *session, char *name, int ep)
 	char epno[10];
 
 	sprintf(epno, "%d", ep);
+
+	throttle_session(session);
 
 	res = anidb_session_cmd(session, "EPISODE",
 	                        "aname", name,
@@ -336,6 +344,8 @@ anidb_session_episode_aid (anidb_session_t *session, int id, int ep)
 
 	sprintf(aid, "%d", id);
 	sprintf(epno, "%d", ep);
+
+	throttle_session(session);
 
 	res = anidb_session_cmd(session, "EPISODE",
 	                        "aid", aid,
@@ -358,6 +368,8 @@ anidb_session_file_id (anidb_session_t *session, int id)
 
 	sprintf(fid, "%d", id);
 
+	throttle_session(session);
+
 	res = anidb_session_cmd(session, "FILE",
 	                        "fid", fid,
 	                        "fcode", "123682590",
@@ -375,6 +387,8 @@ anidb_session_file_ed2k (anidb_session_t *session, int64_t size, char *ed2k)
 	char siz[50];
 
 	sprintf(siz, "%d", size);
+
+	throttle_session(session);
 
 	res = anidb_session_cmd(session, "FILE",
 	                        "size", siz,
@@ -398,6 +412,8 @@ anidb_session_group_id (anidb_session_t *session, int id)
 
 	sprintf(gid, "%d", id);
 
+	throttle_session(session);
+
 	res = anidb_session_cmd(session, "GROUP",
 	                        "gid", gid,
 	                        "s", session->key,
@@ -410,6 +426,8 @@ anidb_result_t *
 anidb_session_group_name (anidb_session_t *session, char *name)
 {
 	anidb_result_t *res;
+
+	throttle_session(session);
 
 	res = anidb_session_cmd(session, "GROUP",
 	                        "gname", name,
