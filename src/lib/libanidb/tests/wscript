@@ -1,0 +1,27 @@
+# vim: set fileencoding=utf-8 filetype=python :
+
+tests = ['test01']
+
+def set_options(opt):
+	pass
+
+def configure(conf):
+	pass
+
+def build(bld):
+	import Options
+
+	defines = []
+
+	if Options.options.debug:
+		defines += ['DEBUG']
+
+	for test in tests:
+		obj = bld.new_task_gen(
+			features = 'cc cprogram',
+			source = test + '.c',
+			target = 'anidb_' + test,
+			uselib_local = 'anidb',
+			ccflags = ['-std=gnu99', '-g'],
+			defines = defines
+		)

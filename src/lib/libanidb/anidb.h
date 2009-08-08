@@ -20,14 +20,13 @@ struct anidb_session_St
 	char clientversion[256];
 	char key[10];
 
-
 	int refcount;
 };
 
 struct anidb_dict_St
 {
-	char *key;
-	char *value;
+	char key[50];
+	char value[512];
 
 	struct anidb_dict_St *next;
 	int refcount;
@@ -41,7 +40,7 @@ struct anidb_result_St
 
 	union {
 		int number;
-		char *string;
+		char string[256];
 		struct anidb_dict_St *dict;
 	} value;
 

@@ -101,8 +101,8 @@ dump_file (anidb_session_t *session, int id)
 {
 	anidb_result_t *res;
 
-	res = anidb_session_file_ed2k(session, 44255118, "90033a52db54437dc4a6041348422d4b");
-//	res = anidb_session_file_id(session, id);
+//	res = anidb_session_file_ed2k(session, 44255118, "90033a52db54437dc4a6041348422d4b");
+	res = anidb_session_file_id(session, id);
 
 	if (anidb_result_get_code(res) == ANIDB_FILE) {
 		dump_result(res);
@@ -139,7 +139,7 @@ main (int argc, char *argv[])
 		exit(0);
 	}
 
-	session = anidb_session_new("anidbfs", "1");
+	session = anidb_session_new("anidbfs", "1", 9998);
 
 	res = anidb_session_authenticate(session, argv[1], argv[2]);
 	dump_result(res);

@@ -11,7 +11,7 @@ def is_backend(x):
 	return os.path.exists(os.path.join(bckenddir, x, 'wscript'))
 
 hashfs = ['src/hashfs']
-libs = ['src/lib/libanidb']
+libs = ['src/lib/libanidb', 'src/lib/libanidb/tests']
 backends = [os.path.join(bckenddir, p) for p in os.listdir(bckenddir) if is_backend(p)]
 
 subdirs = hashfs + libs + backends

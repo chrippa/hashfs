@@ -76,14 +76,14 @@ sock_send (anidb_session_t *session, char *msg, char *out)
 {
 	int n;
 
-//	printf("send: '%s'\n", msg);
+	printf("send: '%s'\n", msg);
 
 	send(session->socket, msg, strlen(msg) + 1, 0);
 	n = recv(session->socket, out, 1000, 0);
 
 	out[n-1] = '\0';
 
-//	printf("recv: '%s'\n", out);
+	printf("recv: '%s'\n", out);
 }
 
 anidb_session_t *
@@ -576,8 +576,8 @@ anidb_dict_unref (anidb_dict_t *dict)
 void
 anidb_dict_set (anidb_dict_t *dict, char *key, char *value)
 {
-	dict->key = key;
-	dict->value = value;
+	strncpy(dict->key, key, sizeof(dict->key));
+	strncpy(dict->value, value, sizeof(dict->value));
 }
 
 int
@@ -640,7 +640,7 @@ void
 anidb_result_set_str (anidb_result_t *result, char *string)
 {
 	result->type = ANIDB_RESULT_STRING;
-	result->value.string = string;
+	strncpy(result->value.string, string, sizeof(result->value.string));
 }
 
 void
