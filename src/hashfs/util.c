@@ -30,6 +30,6 @@ hashfs_current_time (void)
 	localtime_r(&tv, &st);
 	strftime(buf, sizeof(buf), "%H:%M:%S", &st);
 
-	return strdup(buf);
+	return g_strdup(buf);
 }
 

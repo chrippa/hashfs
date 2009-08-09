@@ -78,6 +78,9 @@ hashfs_anidb_init (hashfs_backend_t *backend)
 		rval = FALSE;
 	}
 
+	g_free(username);
+	g_free(password);
+	g_free(port_s);
 	anidb_result_unref(res);
 
 	return rval;
@@ -98,7 +101,7 @@ hashfs_anidb_destroy (hashfs_backend_t *backend)
 		if (anidb_session_is_logged_in(data->session)) {
 			HASHFS_DEBUG("Logging out");
 
-			anidb_session_logout(data->session);
+			anidb_result_unref(anidb_session_logout(data->session));
 		}
 
 		anidb_session_unref(data->session);
@@ -129,6 +132,7 @@ hashfs_anidb_handle_file (hashfs_backend_t *backend, hashfs_file_t *file)
 			dump_result(res);
 
 			anidb_result_unref(res);
+			g_free(hash);
 		}
 	}
 }

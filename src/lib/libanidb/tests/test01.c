@@ -134,12 +134,12 @@ main (int argc, char *argv[])
 	anidb_result_t *res;
 	char *key;
 
-	if (argc < 3) {
-		printf("Usage: %s <username> <password>\n", argv[0]);
+	if (argc < 4) {
+		printf("Usage: %s <username> <password> <port>\n", argv[0]);
 		exit(0);
 	}
 
-	session = anidb_session_new("anidbfs", "1", 9998);
+	session = anidb_session_new("anidbfs", "1", atoi(argv[3]));
 
 	res = anidb_session_authenticate(session, argv[1], argv[2]);
 	dump_result(res);
@@ -155,7 +155,9 @@ main (int argc, char *argv[])
 		dump_episode(session, 21346);
 		dump_file(session, 43698);
 
-		dump_result(anidb_session_logout(session));
+		anidb_result_t *logout = anidb_session_logout(session);
+		dump_result(logout);
+		anidb_result_unref(logout);
 	}
 
 	anidb_result_unref(res);

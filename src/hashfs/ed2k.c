@@ -47,12 +47,10 @@ hashfs_file_hash_ed2k (hashfs_file_t *file, gchar **out)
 
 
 	hash_blocks = g_malloc(blocks * 16);
-	hash_final = g_malloc(16);
 	hash_str = g_strnfill(33, 0);
 	offset = 0;
 
 	g_return_val_if_fail(hash_blocks != NULL, 0);
-	g_return_val_if_fail(hash_final != NULL, 0);
 	g_return_val_if_fail(hash_str != NULL, 0);
 
 	for (gint b = 0; b < blocks; b++) {
@@ -75,6 +73,8 @@ hashfs_file_hash_ed2k (hashfs_file_t *file, gchar **out)
 	/* If we have hashed more than one block,
 	   run MD4 on all the previous hashes */
 	if (blocks > 1) {
+		hash_final = g_malloc(16);
+
 		MD4_Init(&ctx);
 		MD4_Update(&ctx, hash_blocks, 16 * blocks);
 		MD4_Final(hash_final, &ctx);

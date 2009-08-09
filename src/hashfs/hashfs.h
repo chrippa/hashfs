@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <gmodule.h>
+
 
 struct hashfs_backend_St;
 struct hashfs_backend_desc_St;
@@ -22,6 +24,7 @@ struct hashfs_file_St {
 
 struct hashfs_backend_St {
 	gpointer data;
+	GModule *module;
 
 	struct {
 		gboolean (*init)(hashfs_backend_t *);
@@ -58,7 +61,7 @@ void hashfs_file_prop_set (hashfs_file_t *file, const gchar *key, gchar *value);
 hashfs_backend_t * hashfs_backends_lookup (const gchar *name);
 hashfs_backend_t * hashfs_backends_get (gint idx);
 gint hashfs_backends_count (void);
-void hashfs_backends_load (const gchar *path);
+void hashfs_backends_load (gchar *path);
 void hashfs_backends_destroy (void);
 
 hashfs_backend_t * hashfs_backend_load (const gchar *path);
@@ -78,8 +81,10 @@ void hashfs_backend_config_lookup (hashfs_backend_t *backend, const gchar *key, 
 	};
 
 #define HASHFS_LOG(fmt, ...) { \
-	printf("%s  LOG ", hashfs_current_time()); \
+	gchar *log_time = hashfs_current_time(); \
+	printf("%s  LOG ", log_time); \
 	printf(fmt"\n", ## __VA_ARGS__); \
+	g_free(log_time); \
 }
 
 #define HASHFS_ERROR(fmt, ...) { \
@@ -89,11 +94,14 @@ void hashfs_backend_config_lookup (hashfs_backend_t *backend, const gchar *key, 
 
 #ifdef DEBUG
 	#define HASHFS_DEBUG(fmt, ...) { \
-		FILE *fd; \
-		fd = g_fopen(g_build_filename(g_get_user_config_dir(), "hashfs", "debug.log", NULL), "at"); \
-		fprintf(fd, "%s  DEBUG %s:%d: ", hashfs_current_time(), __FILE__, __LINE__); \
+		gchar *log_path = g_build_filename(g_get_user_config_dir(), "hashfs", "debug.log", NULL); \
+		gchar *log_time = hashfs_current_time(); \
+		FILE *fd = g_fopen(log_path, "at"); \
+		fprintf(fd, "%s  DEBUG %s:%d: ", log_time, __FILE__, __LINE__); \
 		fprintf(fd, fmt"\n", ## __VA_ARGS__); \
 		fclose(fd); \
+		g_free(log_path); \
+		g_free(log_time); \
 	}
 #else
 	#define HASHFS_DEBUG(...)

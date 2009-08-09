@@ -52,22 +52,24 @@ hashfs_backend_load (const gchar *path)
 
 	backend = g_new0(hashfs_backend_t, 1);
 	backend->desc = desc;
+	backend->module = module;
 
 	desc->setup_func(backend);
 
 	HASHFS_DEBUG("Backend successfully loaded: %s - %s - %s", desc->shortname,
 	             desc->name, desc->description);
 
+
 	return backend;
 }
 
 void
-hashfs_backends_load (const gchar *path)
+hashfs_backends_load (gchar *path)
 {
 	GDir *dir;
 	GError *error = NULL;
 	const gchar *filename;
-	gchar *pattern, *glob, *fullpath;
+	gchar *pattern, *glob;
 	hashfs_backend_t *backend;
 
 	dir = g_dir_open(path, 0, &error);
@@ -89,7 +91,7 @@ hashfs_backends_load (const gchar *path)
 		if (!g_pattern_match_simple(pattern, filename))
 			continue;
 
-		fullpath = g_build_filename(path, filename, NULL);
+		gchar *fullpath = g_build_filename(path, filename, NULL);
 
 		if (!g_file_test(fullpath, G_FILE_TEST_IS_REGULAR)) {
 			g_free(fullpath);
@@ -101,9 +103,13 @@ hashfs_backends_load (const gchar *path)
 		if (backend) {
 			backends = g_list_append(backends, backend);
 		}
+
+		g_free(fullpath);
 	}
 
 	g_dir_close(dir);
+	g_free(glob);
+	g_free(pattern);
 }
 
 hashfs_backend_t *
@@ -173,6 +179,9 @@ hashfs_backend_destroy (hashfs_backend_t *backend)
 	if (backend->funcs.destroy) {
 		backend->funcs.destroy(backend);
 	}
+
+	if (backend->module)
+		g_module_close(backend->module);
 
 	g_free(backend);
 }

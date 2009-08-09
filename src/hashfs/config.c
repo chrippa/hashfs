@@ -4,7 +4,7 @@
 
 static GKeyFile *config;
 static gboolean config_loaded;
-static const gchar * hashfs_config_build_path (void);
+static gchar * hashfs_config_build_path (void);
 
 
 gboolean
@@ -39,7 +39,7 @@ void
 hashfs_config_load (void)
 {
 	GError *error = NULL;
-	const gchar *configfile;
+	gchar *configfile;
 
 	config = g_key_file_new();
 	configfile = hashfs_config_build_path();
@@ -54,28 +54,38 @@ hashfs_config_load (void)
 
 		g_error_free(error);
 	}
+
+	g_free(configfile);
 }
 
 void
 hashfs_config_save (void)
 {
-	const gchar *configfile;
+	gchar *configfile, *data;
 	FILE *file;
 
 	configfile = hashfs_config_build_path();
+	data = g_key_file_to_data(config, NULL, NULL);
+
 	file = g_fopen(configfile, "w");
-	fputs(g_key_file_to_data(config, NULL, NULL), file);
+	fputs(data, file);
 
 	fclose(file);
+
+	g_free(configfile);
+	g_free(data);
+
+	g_key_file_free(config);
 }
 
-static const gchar *
+static gchar *
 hashfs_config_build_path (void)
 {
-	const gchar *configdir;
-	const gchar *configfile;
+	gchar *configdir, *configfile;
+	const gchar *userconfigdir;
 
-	configdir = g_build_filename(g_get_user_config_dir(), "hashfs", NULL);
+	userconfigdir = g_get_user_config_dir();
+	configdir = g_build_filename(userconfigdir, "hashfs", NULL);
 	configfile = g_build_filename(configdir, "hashfs.conf", NULL);
 
 	if (g_file_test(configdir, G_FILE_TEST_EXISTS)) {
@@ -86,6 +96,8 @@ hashfs_config_build_path (void)
 			HASHFS_ERROR("Unable to create config directory (%s)", configdir);
 		}
 	}
+
+	g_free(configdir);
 
 	return configfile;
 }

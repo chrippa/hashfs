@@ -183,9 +183,13 @@ main (gint argc, gchar **argv)
 	hashfs_config_load();
 
 	if (g_module_supported()) {
-		hashfs_backends_load(g_build_filename(g_get_user_config_dir(), "hashfs", "backends", NULL));
+		gchar *backenddir = g_build_filename(g_get_user_config_dir(), "hashfs", "backends", NULL);
+
+		hashfs_backends_load(backenddir);
 		hashfs_backends_load("/usr/local/lib/hashfs");
 		hashfs_backends_load("./_build_/default/src/backends/anidb/");
+
+		g_free(backenddir);
 	} else {
 		HASHFS_LOG("This platform does not support loading modules");
 
