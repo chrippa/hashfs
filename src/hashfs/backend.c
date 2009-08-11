@@ -143,20 +143,6 @@ hashfs_backends_destroy (void)
 	g_list_free(backends);
 }
 
-hashfs_file_t *
-hashfs_file_new (gchar *filename)
-{
-	hashfs_file_t *file;
-	struct stat info;
-
-	stat(filename, &info);
-
-	file = g_new0(hashfs_file_t, 1);
-	file->filename = filename;
-	file->size = (gint64) info.st_size;
-
-	return file;
-}
 void
 hashfs_backend_init (hashfs_backend_t *backend)
 {

@@ -11,15 +11,26 @@
 struct hashfs_backend_St;
 struct hashfs_backend_desc_St;
 struct hashfs_file_St;
+struct hashfs_set_St;
 
 typedef struct hashfs_backend_St hashfs_backend_t;
 typedef struct hashfs_backend_desc_St hashfs_backend_desc_t;
 typedef struct hashfs_file_St hashfs_file_t;
+typedef struct hashfs_set_St hashfs_set_t;
 
 
 struct hashfs_file_St {
 	gchar *filename;
 	gint64 size;
+	GList *sets;
+
+	/* Hashes */
+	gchar *ed2k;
+	gchar *md5;
+};
+
+struct hashfs_set_St {
+	gchar name[256];
 };
 
 struct hashfs_backend_St {
@@ -53,10 +64,19 @@ gboolean hashfs_config_property_exists (const gchar *group, const gchar *key);
 void hashfs_config_property_lookup (const gchar *group, const gchar *key, gchar **out);
 void hashfs_config_property_set (const gchar *group, const gchar *key, const gchar *value);
 
+hashfs_set_t * hashfs_set_new (gchar *name);
+void hashfs_set_add_file (hashfs_set_t *set, hashfs_file_t *file);
+gint hashfs_set_prop_lookup (hashfs_set_t *file, const gchar *key, gchar **out);
+void hashfs_set_prop_set (hashfs_set_t *file, const gchar *key, gchar *value);
+void hashfs_set_destroy (hashfs_set_t *set);
+
 hashfs_file_t * hashfs_file_new (gchar *filename);
 gint hashfs_file_hash_ed2k (hashfs_file_t *file, gchar **out);
+gint hashfs_file_hash_md5 (hashfs_file_t *file, gchar **out);
 gint hashfs_file_prop_lookup (hashfs_file_t *file, const gchar *key, gchar **out);
 void hashfs_file_prop_set (hashfs_file_t *file, const gchar *key, gchar *value);
+hashfs_set_t * hashfs_file_add_to_set (hashfs_file_t *file, gchar *setname);
+void hashfs_file_destroy (hashfs_file_t *file);
 
 hashfs_backend_t * hashfs_backends_lookup (const gchar *name);
 hashfs_backend_t * hashfs_backends_get (gint idx);

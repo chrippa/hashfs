@@ -91,6 +91,7 @@ hashfs_file_hash_ed2k (hashfs_file_t *file, gchar **out)
 	g_free(hash_blocks);
 	g_free(hash_final);
 
+	file->ed2k = hash_str;
 	*out = hash_str;
 
 	return 1;

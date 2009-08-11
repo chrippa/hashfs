@@ -42,7 +42,6 @@ hashfs_anidb_init (hashfs_backend_t *backend)
 	gint port;
 	gboolean rval;
 
-	HASHFS_DEBUG("Init func");
 	HASHFS_DEBUG("Connecting to AniDB");
 
 	hashfs_backend_config_lookup(backend, "username", &username);
@@ -91,8 +90,6 @@ hashfs_anidb_destroy (hashfs_backend_t *backend)
 {
 	hashfs_anidb_data_t *data;
 
-	HASHFS_DEBUG("Destroy func");
-
 	g_return_if_fail(backend);
 
 	data = (hashfs_anidb_data_t *) backend->data;
@@ -110,12 +107,17 @@ hashfs_anidb_destroy (hashfs_backend_t *backend)
 	}
 }
 
+#define ANIDB_SET_PROP(res, file, prop) { \
+	gchar *tmp; \
+	if (anidb_result_dict_get((res), (prop), &tmp)) \
+		hashfs_file_prop_set((file), (prop), tmp); \
+}
+
 static void
 hashfs_anidb_handle_file (hashfs_backend_t *backend, hashfs_file_t *file)
 {
 	hashfs_anidb_data_t *data;
 	gchar *hash;
-	anidb_result_t *res;
 
 	g_return_if_fail(backend);
 
@@ -125,14 +127,67 @@ hashfs_anidb_handle_file (hashfs_backend_t *backend, hashfs_file_t *file)
 
 	if (anidb_session_is_logged_in(data->session)) {
 		if (hashfs_file_hash_ed2k(file, &hash)) {
+			hashfs_set_t *set;
+			anidb_result_t *res;
+			gchar *tmp;
+
 			HASHFS_DEBUG("ed2k hash: %s", hash);
 
 			res = anidb_session_file_ed2k(data->session, file->size, hash);
 
-			dump_result(res);
+//			dump_result(res);
+
+			ANIDB_SET_PROP(res, file, "fid");
+			ANIDB_SET_PROP(res, file, "eid");
+			ANIDB_SET_PROP(res, file, "state");
+			ANIDB_SET_PROP(res, file, "size");
+			ANIDB_SET_PROP(res, file, "ed2k");
+			ANIDB_SET_PROP(res, file, "md5");
+			ANIDB_SET_PROP(res, file, "sha1");
+			ANIDB_SET_PROP(res, file, "crc32");
+			ANIDB_SET_PROP(res, file, "dub");
+			ANIDB_SET_PROP(res, file, "sub");
+			ANIDB_SET_PROP(res, file, "quality");
+			ANIDB_SET_PROP(res, file, "source");
+			ANIDB_SET_PROP(res, file, "audio");
+			ANIDB_SET_PROP(res, file, "video");
+			ANIDB_SET_PROP(res, file, "resolution");
+			ANIDB_SET_PROP(res, file, "ext");
+			ANIDB_SET_PROP(res, file, "duration");
+			ANIDB_SET_PROP(res, file, "ep_number");
+			ANIDB_SET_PROP(res, file, "ep_eng");
+			ANIDB_SET_PROP(res, file, "ep_romaji");
+			ANIDB_SET_PROP(res, file, "ep_kanji");
+
+			if (anidb_result_dict_get(res, "anime_romaji", &tmp)) {
+				set = hashfs_file_add_to_set(file, tmp);
+
+				hashfs_set_prop_set(set, "romaji", tmp);
+
+				if (anidb_result_dict_get(res, "anime_totalep", &tmp))
+					hashfs_set_prop_set(set, "totalep", tmp);
+
+				if (anidb_result_dict_get(res, "anime_lastep", &tmp))
+					hashfs_set_prop_set(set, "lastep", tmp);
+
+				if (anidb_result_dict_get(res, "anime_year", &tmp))
+					hashfs_set_prop_set(set, "year", tmp);
+
+				if (anidb_result_dict_get(res, "anime_type", &tmp))
+					hashfs_set_prop_set(set, "type", tmp);
+
+				if (anidb_result_dict_get(res, "anime_kanji", &tmp))
+					hashfs_set_prop_set(set, "kanji", tmp);
+
+				if (anidb_result_dict_get(res, "anime_eng", &tmp))
+					hashfs_set_prop_set(set, "eng", tmp);
+
+				if (anidb_result_dict_get(res, "anime_categories", &tmp))
+					hashfs_set_prop_set(set, "categories", tmp);
+
+			}
 
 			anidb_result_unref(res);
-			g_free(hash);
 		}
 	}
 }

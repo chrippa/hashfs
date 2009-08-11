@@ -1,6 +1,6 @@
 # vim: set fileencoding=utf-8 filetype=python :
 
-hashfs = ['hashfs.c', 'db.c', 'ed2k.c', 'config.c', 'backend.c', 'util.c']
+hashfs = ['hashfs.c', 'db.c', 'ed2k.c', 'config.c', 'backend.c', 'util.c', 'set.c', 'file.c']
 hashfsmount = ['hashfsmount.c', 'util.c']
 
 def set_options(opt):

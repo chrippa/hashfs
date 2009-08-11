@@ -8,7 +8,7 @@
 gchar *
 hashfs_basename (char *name)
 {
-  const char *base;
+	const char *base;
 
 	for (base = name; *name; name++) {
 		if (*name == '/') {

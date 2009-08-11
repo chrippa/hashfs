@@ -48,7 +48,7 @@ hashfs_hash_file (hashfs_backend_t *backend, gchar *path)
 
 	hashfs_backend_file(backend, file);
 
-	g_free(file);
+	hashfs_file_destroy(file);
 }
 
 static void
@@ -115,14 +115,21 @@ hashfs_cmd_config (gint argc, gchar **argv)
 		for (gint i = 0; i < numgroups; i++) {
 			gint numkeys;
 			gchar **keys;
+			gchar *val;
 
 			keys = g_key_file_get_keys(config, groups[i], &numkeys, NULL);
 
 			for (gint j = 0; j < numkeys; j++) {
-				printf("%s.%s = %s\n", groups[i], keys[j], g_key_file_get_string(config,
-				       groups[i], keys[j], NULL));
+				hashfs_config_property_lookup(groups[i], keys[j], &val);
+				printf("%s.%s = %s\n", groups[i], keys[j], val);
+
+				g_free(val);
 			}
+
+			g_strfreev(keys);
 		}
+
+		g_strfreev(groups);
 	} else if (argc == 1) {
 		gchar *val;
 		gchar **split;
@@ -135,6 +142,9 @@ hashfs_cmd_config (gint argc, gchar **argv)
 			hashfs_config_property_lookup(split[0], split[1], &val);
 			printf("%s\n", val);
 		}
+
+		g_free(val);
+		g_strfreev(split);
 	} else if (argc == 2) {
 		gchar **split;
 
@@ -146,6 +156,8 @@ hashfs_cmd_config (gint argc, gchar **argv)
 			hashfs_config_property_set(split[0], split[1], argv[1]);
 			printf("Config value %s.%s set to %s\n", split[0], split[1], argv[1]);
 		}
+
+		g_strfreev(split);
 	}
 }
 

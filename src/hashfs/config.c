@@ -3,7 +3,6 @@
 #include "hashfs.h"
 
 static GKeyFile *config;
-static gboolean config_loaded;
 static gchar * hashfs_config_build_path (void);
 
 
