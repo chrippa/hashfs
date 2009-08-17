@@ -117,7 +117,7 @@ static void
 hashfs_anidb_handle_file (hashfs_backend_t *backend, hashfs_file_t *file)
 {
 	hashfs_anidb_data_t *data;
-	gchar *hash;
+	const gchar *hash;
 
 	g_return_if_fail(backend);
 
@@ -133,9 +133,7 @@ hashfs_anidb_handle_file (hashfs_backend_t *backend, hashfs_file_t *file)
 
 			HASHFS_DEBUG("ed2k hash: %s", hash);
 
-			res = anidb_session_file_ed2k(data->session, file->size, hash);
-
-//			dump_result(res);
+			res = anidb_session_file_ed2k(data->session, file->size, (char *) hash);
 
 			ANIDB_SET_PROP(res, file, "fid");
 			ANIDB_SET_PROP(res, file, "eid");
@@ -160,7 +158,7 @@ hashfs_anidb_handle_file (hashfs_backend_t *backend, hashfs_file_t *file)
 			ANIDB_SET_PROP(res, file, "ep_kanji");
 
 			if (anidb_result_dict_get(res, "anime_romaji", &tmp)) {
-				set = hashfs_file_add_to_set(file, tmp);
+				set = hashfs_file_add_to_set(file, tmp, "anime");
 
 				hashfs_set_prop_set(set, "romaji", tmp);
 

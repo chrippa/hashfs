@@ -21,7 +21,7 @@
 static const gchar hexdigits[16] = "0123456789abcdef";
 
 gint
-hashfs_file_hash_ed2k (hashfs_file_t *file, gchar **out)
+hashfs_file_hash_ed2k (hashfs_file_t *file, const gchar **out)
 {
 	gint blocks, fd, len;
 	gint64 size, offset;

@@ -7,7 +7,7 @@ def set_options(opt):
 	pass
 
 def configure(conf):
-	for pkg in ['fuse', 'glib-2.0', 'gmodule-2.0', 'openssl']:
+	for pkg in ['fuse', 'glib-2.0', 'gmodule-2.0', 'tokyocabinet', 'openssl']:
 		if not conf.check_cfg(package = pkg, args = '--cflags --libs', uselib_store = pkg):
 			conf.fatal('Unable to find required library')
 
@@ -24,7 +24,7 @@ def build(bld):
 		source = hashfs,
 		target = 'hashfs',
 		install_path = '${PREFIX}/bin',
-		uselib = 'glib-2.0 gmodule-2.0 openssl',
+		uselib = 'glib-2.0 gmodule-2.0 tokyocabinet openssl',
 		uselib_local = 'anidb',
 		ccflags = ['-std=gnu99', '-g'],
 		defines = defines

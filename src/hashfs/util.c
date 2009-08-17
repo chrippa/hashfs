@@ -6,17 +6,17 @@
 #include "hashfs.h"
 
 gchar *
-hashfs_basename (char *name)
+hashfs_basename (const gchar *name)
 {
-	const char *base;
+	gchar *ptr, *base;
 
-	for (base = name; *name; name++) {
-		if (*name == '/') {
-			base = name + 1;
+	for (ptr = (gchar *) name; *ptr; ptr++) {
+		if (*ptr == '/') {
+			base = ptr + 1;
 		}
 	}
 
-	return (char *) base;
+	return base;
 }
 
 gchar *
@@ -31,5 +31,11 @@ hashfs_current_time (void)
 	strftime(buf, sizeof(buf), "%H:%M:%S", &st);
 
 	return g_strdup(buf);
+}
+
+gchar *
+hashfs_md5_str (const gchar *str)
+{
+	return g_compute_checksum_for_string(G_CHECKSUM_MD5, str, -1);
 }
 

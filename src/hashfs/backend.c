@@ -64,7 +64,7 @@ hashfs_backend_load (const gchar *path)
 }
 
 void
-hashfs_backends_load (gchar *path)
+hashfs_backends_load (const gchar *path)
 {
 	GDir *dir;
 	GError *error = NULL;
@@ -174,7 +174,7 @@ hashfs_backend_destroy (hashfs_backend_t *backend)
 
 void
 hashfs_backend_config_register (hashfs_backend_t *backend, const gchar *key,
-                                gchar *defaultval)
+                                const gchar *defaultval)
 {
 	if (!hashfs_config_property_exists(backend->desc->shortname, key)) {
 		hashfs_config_property_set(backend->desc->shortname, key, defaultval);

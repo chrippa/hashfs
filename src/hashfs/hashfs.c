@@ -44,8 +44,7 @@ hashfs_hash_file (hashfs_backend_t *backend, gchar *path)
 
 	HASHFS_LOG("Hashing file: %s", hashfs_basename(path));
 
-	file = hashfs_file_new(path);
-
+	file = hashfs_file_new(path, backend);
 	hashfs_backend_file(backend, file);
 
 	hashfs_file_destroy(file);
@@ -193,15 +192,16 @@ main (gint argc, gchar **argv)
 	hashfs_backend_t *backend;
 
 	hashfs_config_load();
+	hashfs_db_open();
 
 	if (g_module_supported()) {
-		gchar *backenddir = g_build_filename(g_get_user_config_dir(), "hashfs", "backends", NULL);
+//		gchar *backenddir = g_build_filename(g_get_user_config_dir(), "hashfs", "backends", NULL);
 
-		hashfs_backends_load(backenddir);
+//		hashfs_backends_load(backenddir);
 		hashfs_backends_load("/usr/local/lib/hashfs");
 		hashfs_backends_load("./_build_/default/src/backends/anidb/");
 
-		g_free(backenddir);
+//		g_free(backenddir);
 	} else {
 		HASHFS_LOG("This platform does not support loading modules");
 
@@ -214,8 +214,10 @@ main (gint argc, gchar **argv)
 		hashfs_cmd(main_cmds, "help", argc, argv);
 
 
-	hashfs_config_save();
 	hashfs_backends_destroy();
+
+	hashfs_config_save();
+	hashfs_db_close();
 
 	return 0;
 }
