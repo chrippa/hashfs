@@ -24,15 +24,13 @@ hashfs_file_new (const gchar *filename, hashfs_backend_t *backend)
 	return file;
 }
 
-gint
+gboolean
 hashfs_file_prop_lookup (hashfs_file_t *file, const gchar *key,
                          const gchar **out)
 {
 	HASHFS_DEBUG("File (%s) looking up property: %s", hashfs_basename(file->filename), key);
 
-	// TODO: Actually look up property from DB.
-
-	return 0;
+	return hashfs_db_entry_lookup(file->entry, key, out);
 }
 
 void

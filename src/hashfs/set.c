@@ -18,15 +18,13 @@ hashfs_set_new (const gchar *name, const gchar *source, const gchar *type)
 	return set;
 }
 
-gint
+gboolean
 hashfs_set_prop_lookup (hashfs_set_t *set, const gchar *key,
                         const gchar **out)
 {
 	HASHFS_DEBUG("Set (%s) looking up property: %s", set->name, key);
 
-	// TODO: Actually look up property from DB.
-
-	return 0;
+	return hashfs_db_entry_lookup(set->entry, key, out);
 }
 
 void

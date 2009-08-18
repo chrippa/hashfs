@@ -20,7 +20,7 @@
 
 static const gchar hexdigits[16] = "0123456789abcdef";
 
-gint
+gboolean
 hashfs_file_hash_ed2k (hashfs_file_t *file, const gchar **out)
 {
 	gint blocks, fd, len;
@@ -33,7 +33,7 @@ hashfs_file_hash_ed2k (hashfs_file_t *file, const gchar **out)
 	if ((fd = g_open(file->filename, O_RDONLY, "rb")) < 0) {
 		HASHFS_DEBUG("Failed to open file (%s)", file->filename);
 
-		return 0;
+		return FALSE;
 	}
 
 	blocks = file->size / BLOCKSIZE;
@@ -43,7 +43,7 @@ hashfs_file_hash_ed2k (hashfs_file_t *file, const gchar **out)
 
 
 	if (blocks < 1)
-		return 0;
+		return FALSE;
 
 
 	hash_blocks = g_malloc(blocks * 16);
@@ -94,5 +94,5 @@ hashfs_file_hash_ed2k (hashfs_file_t *file, const gchar **out)
 	file->ed2k = hash_str;
 	*out = hash_str;
 
-	return 1;
+	return TRUE;
 }

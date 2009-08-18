@@ -38,7 +38,8 @@ hashfs_anidb_init (hashfs_backend_t *backend)
 	anidb_session_t *session;
 	anidb_result_t *res;
 	hashfs_anidb_data_t *data;
-	gchar *username, *password, *port_s, *key;
+	gchar *username, *password, *port_s;
+	const gchar *key;
 	gint port;
 	gboolean rval;
 
@@ -53,6 +54,7 @@ hashfs_anidb_init (hashfs_backend_t *backend)
 	HASHFS_DEBUG("username=%s, password=%s, port=%d", username, password, port);
 
 	session = anidb_session_new("anidbfuse", "1", port);
+
 	data = g_new0(hashfs_anidb_data_t, 1);
 	data->session = session;
 	backend->data = data;
@@ -107,12 +109,6 @@ hashfs_anidb_destroy (hashfs_backend_t *backend)
 	}
 }
 
-#define ANIDB_SET_PROP(res, file, prop) { \
-	gchar *tmp; \
-	if (anidb_result_dict_get((res), (prop), &tmp)) \
-		hashfs_file_prop_set((file), (prop), tmp); \
-}
-
 static void
 hashfs_anidb_handle_file (hashfs_backend_t *backend, hashfs_file_t *file)
 {
@@ -129,60 +125,53 @@ hashfs_anidb_handle_file (hashfs_backend_t *backend, hashfs_file_t *file)
 		if (hashfs_file_hash_ed2k(file, &hash)) {
 			hashfs_set_t *set;
 			anidb_result_t *res;
-			gchar *tmp;
+			const gchar *tmp, *aid, *gid;
 
 			HASHFS_DEBUG("ed2k hash: %s", hash);
 
-			res = anidb_session_file_ed2k(data->session, file->size, (char *) hash);
+			res = anidb_session_file_ed2k(data->session, file->size, hash);
 
-			ANIDB_SET_PROP(res, file, "fid");
-			ANIDB_SET_PROP(res, file, "eid");
-			ANIDB_SET_PROP(res, file, "state");
-			ANIDB_SET_PROP(res, file, "size");
-			ANIDB_SET_PROP(res, file, "ed2k");
-			ANIDB_SET_PROP(res, file, "md5");
-			ANIDB_SET_PROP(res, file, "sha1");
-			ANIDB_SET_PROP(res, file, "crc32");
-			ANIDB_SET_PROP(res, file, "dub");
-			ANIDB_SET_PROP(res, file, "sub");
-			ANIDB_SET_PROP(res, file, "quality");
-			ANIDB_SET_PROP(res, file, "source");
-			ANIDB_SET_PROP(res, file, "audio");
-			ANIDB_SET_PROP(res, file, "video");
-			ANIDB_SET_PROP(res, file, "resolution");
-			ANIDB_SET_PROP(res, file, "ext");
-			ANIDB_SET_PROP(res, file, "duration");
-			ANIDB_SET_PROP(res, file, "ep_number");
-			ANIDB_SET_PROP(res, file, "ep_eng");
-			ANIDB_SET_PROP(res, file, "ep_romaji");
-			ANIDB_SET_PROP(res, file, "ep_kanji");
+			for (anidb_dict_t *dict = anidb_result_get_dict(res); dict;
+			     dict = anidb_dict_next(dict)) {
+				hashfs_file_prop_set(file, dict->key, dict->value);
+			}
 
-			if (anidb_result_dict_get(res, "anime_romaji", &tmp)) {
-				set = hashfs_file_add_to_set(file, tmp, "anime");
+			if (anidb_result_dict_get(res, "aid", &aid)) {
+				set = hashfs_file_add_to_set(file, aid, "anime");
 
-				hashfs_set_prop_set(set, "romaji", tmp);
+				if (!hashfs_set_prop_lookup(set, "aid", &tmp)) {
+					anidb_result_t *res;
 
-				if (anidb_result_dict_get(res, "anime_totalep", &tmp))
-					hashfs_set_prop_set(set, "totalep", tmp);
+					HASHFS_DEBUG("Need to lookup anime!");
 
-				if (anidb_result_dict_get(res, "anime_lastep", &tmp))
-					hashfs_set_prop_set(set, "lastep", tmp);
+					res = anidb_session_anime_id(data->session, atoi(aid));
 
-				if (anidb_result_dict_get(res, "anime_year", &tmp))
-					hashfs_set_prop_set(set, "year", tmp);
+					for (anidb_dict_t *dict = anidb_result_get_dict(res); dict;
+					     dict = anidb_dict_next(dict)) {
+						hashfs_set_prop_set(set, dict->key, dict->value);
+					}
 
-				if (anidb_result_dict_get(res, "anime_type", &tmp))
-					hashfs_set_prop_set(set, "type", tmp);
+					anidb_result_unref(res);
+				}
+			}
 
-				if (anidb_result_dict_get(res, "anime_kanji", &tmp))
-					hashfs_set_prop_set(set, "kanji", tmp);
+			if (anidb_result_dict_get(res, "gid", &gid)) {
+				set = hashfs_file_add_to_set(file, gid, "group");
 
-				if (anidb_result_dict_get(res, "anime_eng", &tmp))
-					hashfs_set_prop_set(set, "eng", tmp);
+				if (!hashfs_set_prop_lookup(set, "gid", &tmp)) {
+					anidb_result_t *res;
 
-				if (anidb_result_dict_get(res, "anime_categories", &tmp))
-					hashfs_set_prop_set(set, "categories", tmp);
+					HASHFS_DEBUG("Need to lookup group!");
 
+					res = anidb_session_group_id(data->session, atoi(gid));
+
+					for (anidb_dict_t *dict = anidb_result_get_dict(res); dict;
+					     dict = anidb_dict_next(dict)) {
+						hashfs_set_prop_set(set, dict->key, dict->value);
+					}
+
+					anidb_result_unref(res);
+				}
 			}
 
 			anidb_result_unref(res);
@@ -194,7 +183,7 @@ static void
 dump_result (anidb_result_t *result)
 {
 	gint n;
-	gchar *str;
+	const gchar *str;
 	anidb_dict_t *dict;
 
 	switch (anidb_result_get_type(result)) {

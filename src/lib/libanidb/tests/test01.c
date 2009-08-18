@@ -17,7 +17,7 @@ static void
 dump_result (anidb_result_t *result)
 {
 	int n;
-	char *str;
+	const char *str;
 	anidb_dict_t *dict;
 
 	switch (anidb_result_get_type(result)) {
@@ -132,7 +132,7 @@ main (int argc, char *argv[])
 {
 	anidb_session_t *session;
 	anidb_result_t *res;
-	char *key;
+	const char *key;
 
 	if (argc < 4) {
 		printf("Usage: %s <username> <password> <port>\n", argv[0]);

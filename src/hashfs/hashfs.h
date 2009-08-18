@@ -91,23 +91,23 @@ gboolean hashfs_db_tran_commit (void);
 
 /* Database entry */
 hashfs_db_entry_t * hashfs_db_entry_new (const gchar *prefix, const gchar *id, const gchar *source, const gchar *type);
+gboolean hashfs_db_entry_lookup (hashfs_db_entry_t *entry, const gchar *key, const gchar **out);
 void hashfs_db_entry_set (hashfs_db_entry_t *entry, const gchar *key, const gchar *value);
-gboolean hashfs_db_entry_get (hashfs_db_entry_t *entry, const gchar *key, const gchar **out);
 gboolean hashfs_db_entry_put (hashfs_db_entry_t *entry);
 void hashfs_db_entry_destroy (hashfs_db_entry_t *entry);
 
 /* Set */
 hashfs_set_t * hashfs_set_new (const gchar *name, const gchar *source, const gchar *type);
-gint hashfs_set_prop_lookup (hashfs_set_t *file, const gchar *key, const gchar **out);
+gboolean hashfs_set_prop_lookup (hashfs_set_t *file, const gchar *key, const gchar **out);
 void hashfs_set_prop_set (hashfs_set_t *file, const gchar *key, const gchar *value);
 void hashfs_set_destroy (hashfs_set_t *set);
 
 
 /* File */
 hashfs_file_t * hashfs_file_new (const gchar *filename, hashfs_backend_t *backend);
-gint hashfs_file_hash_ed2k (hashfs_file_t *file, const gchar **out);
-gint hashfs_file_hash_md5 (hashfs_file_t *file, const gchar **out);
-gint hashfs_file_prop_lookup (hashfs_file_t *file, const gchar *key, const gchar **out);
+gboolean hashfs_file_hash_ed2k (hashfs_file_t *file, const gchar **out);
+gboolean hashfs_file_hash_md5 (hashfs_file_t *file, const gchar **out);
+gboolean hashfs_file_prop_lookup (hashfs_file_t *file, const gchar *key, const gchar **out);
 void hashfs_file_prop_set (hashfs_file_t *file, const gchar *key, const gchar *value);
 hashfs_set_t * hashfs_file_add_to_set (hashfs_file_t *file, const gchar *name, const gchar *type);
 void hashfs_file_destroy (hashfs_file_t *file);

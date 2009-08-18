@@ -4,6 +4,21 @@
 #include <sys/time.h>
 
 
+
+/* Types */
+enum anidb_result_type;
+struct anidb_error_St;
+struct anidb_dict_St;
+struct anidb_session_St;
+struct anidb_result_St;
+struct anidb_result_handler_St;
+
+typedef enum anidb_result_type anidb_result_type_t;
+typedef struct anidb_dict_St anidb_dict_t;
+typedef struct anidb_result_St anidb_result_t;
+typedef struct anidb_result_handler_St anidb_result_handler_t;
+typedef struct anidb_session_St anidb_session_t;
+
 enum anidb_result_type
 {
 	ANIDB_RESULT_NULL,
@@ -28,20 +43,19 @@ struct anidb_dict_St
 	char key[50];
 	char value[512];
 
-	struct anidb_dict_St *next;
+	anidb_dict_t *next;
 	int refcount;
 };
 
 struct anidb_result_St
 {
-	struct anidb_error_St *error;
 	int code;
-	enum anidb_result_type type;
+	anidb_result_type_t type;
 
 	union {
 		int number;
 		char string[256];
-		struct anidb_dict_St *dict;
+		anidb_dict_t *dict;
 	} value;
 
 	int refcount;
@@ -50,16 +64,8 @@ struct anidb_result_St
 struct anidb_result_handler_St
 {
 	int code;
-	void (*func)(struct anidb_result_St *, char *);
+	void (*func)(anidb_result_t *, char *);
 };
-
-/* Types */
-typedef enum anidb_result_type anidb_result_type_t;
-typedef struct anidb_session_St anidb_session_t;
-typedef struct anidb_dict_St anidb_dict_t;
-typedef struct anidb_result_St anidb_result_t;
-typedef struct anidb_result_handler_St anidb_result_handler_t;
-typedef struct anidb_error_St anidb_error_t;
 
 
 /* Session */
@@ -67,14 +73,14 @@ anidb_session_t * anidb_session_new (char *name, char *version, int localport);
 
 /* AUTH */
 anidb_result_t * anidb_session_authenticate (anidb_session_t *session,
-                                             char *username,
-                                             char *password);
+                                             const char *username,
+                                             const char *password);
 
 /* LOGOUT */
 anidb_result_t * anidb_session_logout (anidb_session_t *session);
 
 /* ANIME */
-anidb_result_t * anidb_session_anime_name (anidb_session_t *session, char *name);
+anidb_result_t * anidb_session_anime_name (anidb_session_t *session, const char *name);
 anidb_result_t * anidb_session_anime_id (anidb_session_t *session, int id);
 
 /* ANIMEDESC */
@@ -82,16 +88,16 @@ anidb_result_t * anidb_session_animedesc (anidb_session_t *session, int id, int 
 
 /* EPISODE */
 anidb_result_t * anidb_session_episode_id (anidb_session_t *session, int id);
-anidb_result_t * anidb_session_episode_name (anidb_session_t *session, char *name, int ep);
+anidb_result_t * anidb_session_episode_name (anidb_session_t *session, const char *name, int ep);
 anidb_result_t * anidb_session_episode_aid (anidb_session_t *session, int id, int ep);
 
 /* FILE */
 anidb_result_t * anidb_session_file_id (anidb_session_t *session, int id);
-anidb_result_t * anidb_session_file_ed2k (anidb_session_t *session, int64_t size, char *ed2k);
+anidb_result_t * anidb_session_file_ed2k (anidb_session_t *session, int64_t size, const char *ed2k);
 
 /* GROUP */
 anidb_result_t * anidb_session_group_id (anidb_session_t *session, int id);
-anidb_result_t * anidb_session_group_name (anidb_session_t *session, char *name);
+anidb_result_t * anidb_session_group_name (anidb_session_t *session, const char *name);
 
 /* GROUPSTATUS */
 anidb_result_t * anidb_session_groupstatus (anidb_session_t *session, int id);
@@ -100,12 +106,12 @@ anidb_result_t * anidb_session_groupstatus (anidb_session_t *session, int id);
 
 /* MYLISTADD */
 anidb_result_t * anidb_session_mylist_add_fid (anidb_session_t *session, int id);
-anidb_result_t * anidb_session_mylist_add_ed2k (anidb_session_t *session, int size, char *ed2k);
+anidb_result_t * anidb_session_mylist_add_ed2k (anidb_session_t *session, int size, const char *ed2k);
 
 /* MYLISTDEL */
 anidb_result_t * anidb_session_mylist_del_id (anidb_session_t *session, int id);
 anidb_result_t * anidb_session_mylist_del_fid (anidb_session_t *session, int id);
-anidb_result_t * anidb_session_mylist_del_ed2k (anidb_session_t *session, int size, char *ed2k);
+anidb_result_t * anidb_session_mylist_del_ed2k (anidb_session_t *session, int size, const char *ed2k);
 
 /* MYLISTSTATS */
 anidb_result_t * anidb_session_mylist_stats (anidb_session_t *session);
@@ -132,7 +138,7 @@ anidb_result_t * anidb_session_version (anidb_session_t *session);
 /* USER */
 
 
-void anidb_session_set_key (anidb_session_t *session, char *key);
+void anidb_session_set_key (anidb_session_t *session, const char *key);
 int anidb_session_is_logged_in (anidb_session_t *session);
 void anidb_session_ref (anidb_session_t *session);
 void anidb_session_unref (anidb_session_t *session);
@@ -144,8 +150,8 @@ anidb_dict_t * anidb_dict_next (anidb_dict_t *dict);
 void anidb_dict_ref (anidb_dict_t *dict);
 void anidb_dict_unref (anidb_dict_t *dict);
 
-void anidb_dict_set (anidb_dict_t *dict, char *key, char *value);
-int anidb_dict_get (anidb_dict_t *dict, char **out);
+void anidb_dict_set (anidb_dict_t *dict, const char *key, const char *value);
+int anidb_dict_get (anidb_dict_t *dict, const char **out);
 
 
 /* Result */
@@ -153,15 +159,15 @@ anidb_result_t * anidb_result_new (int code);
 void anidb_result_ref (anidb_result_t *result);
 void anidb_result_unref (anidb_result_t *result);
 
-void anidb_result_set_str (anidb_result_t *result, char *string);
+void anidb_result_set_str (anidb_result_t *result, const char *string);
 void anidb_result_set_int (anidb_result_t *result, int number);
-void anidb_result_dict_set (anidb_result_t *result, char *key, char *value);
+void anidb_result_dict_set (anidb_result_t *result, const char *key, const char *value);
 
 anidb_result_type_t anidb_result_get_type (anidb_result_t *result);
 int anidb_result_get_code (anidb_result_t *result);
-int anidb_result_get_str (anidb_result_t *result, char **out);
+int anidb_result_get_str (anidb_result_t *result, const char **out);
 int anidb_result_get_int (anidb_result_t *result, int *out);
-int anidb_result_dict_get (anidb_result_t *result, char *key, char **out);
+int anidb_result_dict_get (anidb_result_t *result, const char *key, const char **out);
 anidb_dict_t * anidb_result_get_dict (anidb_result_t *result);
 
 

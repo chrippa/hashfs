@@ -84,6 +84,7 @@ hashfs_db_entry_new (const gchar *prefix, const gchar *id,
 {
 	hashfs_db_entry_t *entry;
 	gchar *pkey, *md5;
+	TCMAP *curdata;
 
 	md5 = hashfs_md5_str(id);
 
@@ -95,7 +96,13 @@ hashfs_db_entry_new (const gchar *prefix, const gchar *id,
 
 	entry = g_new0(hashfs_db_entry_t, 1);
 	entry->pkey = pkey;
-	entry->data = tcmapnew();
+
+	curdata = tctdbget(db->tdb, pkey, strlen(pkey));
+
+	if (curdata != NULL)
+		entry->data = curdata;
+	else
+		entry->data = tcmapnew();
 
 	HASHFS_DEBUG("Created entry with pkey: %s", pkey);
 
@@ -115,10 +122,19 @@ hashfs_db_entry_set (hashfs_db_entry_t *entry, const gchar *key,
 }
 
 gboolean
-hashfs_db_entry_get (hashfs_db_entry_t *entry, const gchar *key,
-                     const gchar **out)
+hashfs_db_entry_lookup (hashfs_db_entry_t *entry, const gchar *key,
+                        const gchar **out)
 {
+	const gchar *val;
 
+	val = tcmapget2(entry->data, key);
+
+	if (val == NULL)
+		return FALSE;
+
+	*out = val;
+
+	return TRUE;
 }
 
 gboolean
