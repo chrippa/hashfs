@@ -51,7 +51,7 @@ hashfs_anidb_init (hashfs_backend_t *backend)
 	hashfs_backend_glob_set(backend, "*.avi", "*.mkv", "*.ogm",
 	                        "*.mpg", "*.mpeg", "*.ogg", "*.ogv",
 	                        "*.mp4", "*.rm", "*.divx", "*.xvid",
-	                        "*.flv", NULL);
+	                        "*.flv", "*.wmv", "*.rmvb", NULL);
 
 	port = atoi(port_s);
 
@@ -184,7 +184,10 @@ hashfs_anidb_handle_file (hashfs_backend_t *backend, hashfs_file_t *file)
 				}
 			}
 
-			hashfs_file_prop_set(file, "anidb:resolved", "1");
+			if (anidb_result_get_type(res) == ANIDB_RESULT_DICT)
+				hashfs_file_prop_set(file, "anidb:resolved", "1");
+			else
+				hashfs_file_prop_set(file, "anidb:resolved", "0");
 
 			anidb_result_unref(res);
 		}

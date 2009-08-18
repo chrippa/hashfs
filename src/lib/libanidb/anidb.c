@@ -191,7 +191,7 @@ anidb_session_cmd (anidb_session_t *session, const char *cmd, ...)
 	anidb_result_t *res;
 	va_list aq, ap;
 
-	sprintf(out, "%s ", cmd);
+	snprintf(out, sizeof(out), "%s ", cmd);
 
 	va_start(ap, cmd);
 	va_copy(aq, ap);
@@ -203,6 +203,9 @@ anidb_session_cmd (anidb_session_t *session, const char *cmd, ...)
 	res = anidb_result_new(code);
 
 	for (int i = 0; i < LENGTH(anidb_handlers); i++) {
+		if (anidb_handlers[i].func == NULL)
+			break;
+
 		if (anidb_handlers[i].code == code) {
 			anidb_handlers[i].func(res, in);
 			break;
@@ -256,9 +259,9 @@ anidb_result_t *
 anidb_session_anime_id (anidb_session_t *session, int id)
 {
 	anidb_result_t *res;
-	char aid[10];
+	char aid[50];
 
-	sprintf(aid, "%d", id);
+	snprintf(aid, sizeof(aid), "%d", id);
 
 	throttle_session(session);
 
@@ -277,11 +280,11 @@ anidb_result_t *
 anidb_session_animedesc (anidb_session_t *session, int id, int n)
 {
 	anidb_result_t *res;
-	char aid[10];
-	char part[10];
+	char aid[50];
+	char part[50];
 
-	sprintf(aid, "%d", id);
-	sprintf(part, "%d", n);
+	snprintf(aid, sizeof(aid), "%d", id);
+	snprintf(part, sizeof(part), "%d", n);
 
 	throttle_session(session);
 
@@ -301,9 +304,9 @@ anidb_result_t *
 anidb_session_episode_id (anidb_session_t *session, int id)
 {
 	anidb_result_t *res;
-	char eid[10];
+	char eid[50];
 
-	sprintf(eid, "%d", id);
+	snprintf(eid, sizeof(eid), "%d", id);
 
 	throttle_session(session);
 
@@ -319,9 +322,9 @@ anidb_result_t *
 anidb_session_episode_name (anidb_session_t *session, const char *name, int ep)
 {
 	anidb_result_t *res;
-	char epno[10];
+	char epno[50];
 
-	sprintf(epno, "%d", ep);
+	snprintf(epno, sizeof(epno), "%d", ep);
 
 	throttle_session(session);
 
@@ -339,11 +342,11 @@ anidb_result_t *
 anidb_session_episode_aid (anidb_session_t *session, int id, int ep)
 {
 	anidb_result_t *res;
-	char aid[10];
-	char epno[10];
+	char aid[50];
+	char epno[50];
 
-	sprintf(aid, "%d", id);
-	sprintf(epno, "%d", ep);
+	snprintf(aid, sizeof(aid), "%d", id);
+	snprintf(epno, sizeof(epno), "%d", ep);
 
 	throttle_session(session);
 
@@ -364,9 +367,9 @@ anidb_result_t *
 anidb_session_file_id (anidb_session_t *session, int id)
 {
 	anidb_result_t *res;
-	char fid[10];
+	char fid[50];
 
-	sprintf(fid, "%d", id);
+	snprintf(fid, sizeof(fid), "%d", id);
 
 	throttle_session(session);
 
@@ -386,7 +389,7 @@ anidb_session_file_ed2k (anidb_session_t *session, int64_t size, const char *ed2
 	anidb_result_t *res;
 	char siz[50];
 
-	sprintf(siz, "%d", size);
+	snprintf(siz, sizeof(siz), "%d", size);
 
 	throttle_session(session);
 
@@ -408,9 +411,9 @@ anidb_result_t *
 anidb_session_group_id (anidb_session_t *session, int id)
 {
 	anidb_result_t *res;
-	char gid[10];
+	char gid[50];
 
-	sprintf(gid, "%d", id);
+	snprintf(gid, sizeof(gid), "%d", id);
 
 	throttle_session(session);
 
@@ -454,9 +457,9 @@ anidb_result_t *
 anidb_session_mylist_add_fid (anidb_session_t *session, int id)
 {
 	anidb_result_t *res;
-	char fid[10];
+	char fid[50];
 
-	sprintf(fid, "%d", id);
+	snprintf(fid, sizeof(fid), "%d", id);
 
 	res = anidb_session_cmd(session, "MYLISTADD",
 	                        "fid", fid,
@@ -470,9 +473,9 @@ anidb_result_t *
 anidb_session_mylist_add_ed2k (anidb_session_t *session, int size, const char *ed2k)
 {
 	anidb_result_t *res;
-	char siz[20];
+	char siz[50];
 
-	sprintf(siz, "%d", size);
+	snprintf(siz, sizeof(siz), "%d", size);
 
 	res = anidb_session_cmd(session, "MYLISTADD",
 	                        "size", siz,
@@ -490,9 +493,9 @@ anidb_result_t *
 anidb_session_mylist_del_id (anidb_session_t *session, int id)
 {
 	anidb_result_t *res;
-	char lid[10];
+	char lid[50];
 
-	sprintf(lid, "%d", id);
+	snprintf(lid, sizeof(lid), "%d", id);
 
 	res = anidb_session_cmd(session, "MYLISTDEL",
 	                        "lid", lid,
@@ -507,9 +510,9 @@ anidb_result_t *
 anidb_session_mylist_del_fid (anidb_session_t *session, int id)
 {
 	anidb_result_t *res;
-	char fid[10];
+	char fid[50];
 
-	sprintf(fid, "%d", id);
+	snprintf(fid, sizeof(fid), "%d", id);
 
 	res = anidb_session_cmd(session, "MYLISTDEL",
 	                        "fid", fid,
@@ -524,9 +527,9 @@ anidb_result_t *
 anidb_session_mylist_del_ed2k (anidb_session_t *session, int size, const char *ed2k)
 {
 	anidb_result_t *res;
-	char siz[20];
+	char siz[50];
 
-	sprintf(siz, "%d", size);
+	snprintf(siz, sizeof(siz), "%d", size);
 
 	res = anidb_session_cmd(session, "MYLISTDEL",
 	                        "size", siz,
