@@ -160,6 +160,40 @@ hashfs_backend_file (hashfs_backend_t *backend, hashfs_file_t *file)
 }
 
 void
+hashfs_backend_glob_set (hashfs_backend_t *backend, ...)
+{
+	GPatternSpec *spec;
+	va_list va;
+
+
+	va_start(va, backend);
+
+	for (gchar *str = va_arg(va, char *); str; str = va_arg(va, char *)) {
+		HASHFS_DEBUG("Backend (%s) accepting glob: %s", backend->desc->shortname, str);
+
+		spec = g_pattern_spec_new(str);
+
+		backend->globs = g_list_append(backend->globs, spec);
+	}
+}
+
+gboolean
+hashfs_backend_glob_try (hashfs_backend_t *backend, const gchar *filename)
+{
+	GPatternSpec *spec;
+	GList *item;
+
+	for (item = g_list_first(backend->globs); item; item = g_list_next(item)) {
+		spec = item->data;
+
+		if (g_pattern_match_string(spec, filename))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+void
 hashfs_backend_destroy (hashfs_backend_t *backend)
 {
 	if (backend->funcs.destroy) {
@@ -168,6 +202,19 @@ hashfs_backend_destroy (hashfs_backend_t *backend)
 
 	if (backend->module)
 		g_module_close(backend->module);
+
+	if (backend->globs) {
+		GPatternSpec *spec;
+		GList *item;
+
+		for (item = g_list_first(backend->globs); item; item = g_list_next(item)) {
+			spec = item->data;
+
+			g_pattern_spec_free(spec);
+		}
+
+		g_list_free(backend->globs);
+	}
 
 	g_free(backend);
 }

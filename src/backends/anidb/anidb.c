@@ -48,6 +48,10 @@ hashfs_anidb_init (hashfs_backend_t *backend)
 	hashfs_backend_config_lookup(backend, "username", &username);
 	hashfs_backend_config_lookup(backend, "password", &password);
 	hashfs_backend_config_lookup(backend, "local_port", &port_s);
+	hashfs_backend_glob_set(backend, "*.avi", "*.mkv", "*.ogm",
+	                        "*.mpg", "*.mpeg", "*.ogg", "*.ogv",
+	                        "*.mp4", "*.rm", "*.divx", "*.xvid",
+	                        "*.flv", NULL);
 
 	port = atoi(port_s);
 
@@ -113,13 +117,19 @@ static void
 hashfs_anidb_handle_file (hashfs_backend_t *backend, hashfs_file_t *file)
 {
 	hashfs_anidb_data_t *data;
-	const gchar *hash;
+	const gchar *hash, *resolved;
 
 	g_return_if_fail(backend);
 
 	data = (hashfs_anidb_data_t *) backend->data;
 
 	g_return_if_fail(data);
+
+	/* File is marked as resolved, don't hash or lookup data */
+	if (hashfs_file_prop_lookup(file, "anidb:resolved", &resolved)) {
+		if (atoi(resolved) > 0)
+			return;
+	}
 
 	if (anidb_session_is_logged_in(data->session)) {
 		if (hashfs_file_hash_ed2k(file, &hash)) {
@@ -173,6 +183,8 @@ hashfs_anidb_handle_file (hashfs_backend_t *backend, hashfs_file_t *file)
 					anidb_result_unref(res);
 				}
 			}
+
+			hashfs_file_prop_set(file, "anidb:resolved", "1");
 
 			anidb_result_unref(res);
 		}

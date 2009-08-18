@@ -27,6 +27,7 @@ typedef struct hashfs_set_St hashfs_set_t;
 
 struct hashfs_backend_St {
 	gpointer data;
+	GList *globs;
 	GModule *module;
 
 	struct {
@@ -126,6 +127,8 @@ hashfs_backend_t * hashfs_backend_load (const gchar *path);
 void hashfs_backend_init (hashfs_backend_t *backend);
 void hashfs_backend_file (hashfs_backend_t *backend, hashfs_file_t *file);
 void hashfs_backend_destroy (hashfs_backend_t *backend);
+void hashfs_backend_glob_set (hashfs_backend_t *backend, ...);
+gboolean hashfs_backend_glob_try (hashfs_backend_t *backend, const gchar *filename);
 void hashfs_backend_config_register (hashfs_backend_t *backend, const gchar *key, const gchar *defaultval);
 void hashfs_backend_config_lookup (hashfs_backend_t *backend, const gchar *key, gchar **out);
 
