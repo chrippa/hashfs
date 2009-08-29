@@ -55,18 +55,24 @@ hashfs_db_close (void)
 gboolean
 hashfs_db_tran_begin (void)
 {
+	HASHFS_DEBUG("Starting transsaction");
+
 	return (gboolean) tctdbtranbegin(db->tdb);
 }
 
 gboolean
 hashfs_db_tran_commit (void)
 {
+	HASHFS_DEBUG("Comitting transsaction");
+
 	return (gboolean) tctdbtrancommit(db->tdb);
 }
 
 gboolean
 hashfs_db_tran_abort (void)
 {
+	HASHFS_DEBUG("Aborting transsaction");
+
 	return (gboolean) tctdbtranabort(db->tdb);
 }
 

@@ -19,6 +19,7 @@ hashfs_file_new (const gchar *filename, hashfs_backend_t *backend)
 	file->ed2k = NULL;
 	file->md5 = NULL;
 
+	hashfs_db_tran_begin();
 	hashfs_db_entry_set(file->entry, "path", filename);
 
 	return file;
@@ -67,6 +68,8 @@ void
 hashfs_file_destroy (hashfs_file_t *file)
 {
 	HASHFS_DEBUG("File (%s) destroying", hashfs_basename(file->filename));
+
+	hashfs_db_tran_commit();
 
 	if (file->filename)
 		g_free(file->filename);
