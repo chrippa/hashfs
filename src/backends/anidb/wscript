@@ -9,13 +9,6 @@ def configure(conf):
 	pass
 
 def build(bld):
-	import Options
-
-	defines = []
-
-	if Options.options.debug:
-		defines += ['DEBUG']
-
 	obj = bld.new_task_gen(
 		features = 'cc cshlib',
 		source = files,
@@ -23,7 +16,7 @@ def build(bld):
 		includes = '. ../../hashfs',
 		install_path = '${PREFIX}/lib/hashfs',
 		ccflags = ['-std=gnu99', '-g'],
-		defines = defines,
+		defines = bld.env['defines'],
 		uselib = 'glib-2.0',
 		uselib_local = 'anidb',
 	)

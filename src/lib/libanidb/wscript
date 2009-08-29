@@ -12,17 +12,11 @@ def configure(conf):
 			conf.fatal('Unable to find required library')
 
 def build(bld):
-	import Options
-
-	defines = []
-	if Options.options.debug:
-		defines += ['DEBUG']
-
 	obj = bld.new_task_gen(
 		features = 'cc cstaticlib',
 		target = 'anidb',
 		source = files,
-		defines = defines,
+		defines = bld.env['defines'],
 		ccflags = ['-std=gnu99', '-g'],
 		uselib = 'rt',
 		install_path = False,

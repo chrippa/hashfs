@@ -1,7 +1,10 @@
 # vim: set fileencoding=utf-8 filetype=python :
 
-hashfs = ['hashfs.c', 'db.c', 'ed2k.c', 'config.c', 'backend.c', 'util.c', 'set.c', 'file.c']
-hashfsmount = ['hashfsmount.c', 'util.c']
+common = ['config.c', 'backend.c', 'db.c', 'ed2k.c', 'file.c', 'set.c', 'util.c']
+common_libs = 'glib-2.0 gmodule-2.0 tokyocabinet openssl'
+
+hashfs = ['hashfs.c'] + common
+hashfsmount = ['hashfsmount.c'] + common
 
 def set_options(opt):
 	pass
@@ -12,31 +15,23 @@ def configure(conf):
 			conf.fatal('Unable to find required library')
 
 def build(bld):
-	import Options
-
-	defines = []
-
-	if Options.options.debug:
-		defines += ['DEBUG']
-
 	obj = bld.new_task_gen(
 		features = 'cc cprogram',
 		source = hashfs,
 		target = 'hashfs',
 		install_path = '${PREFIX}/bin',
-		uselib = 'glib-2.0 gmodule-2.0 tokyocabinet openssl',
-		uselib_local = 'anidb',
+		uselib = common_libs,
 		ccflags = ['-std=gnu99', '-g'],
-		defines = defines
+		defines = bld.env['defines']
 	)
 
 	obj = bld.new_task_gen(
 		features = 'cc cprogram',
 		source = hashfsmount,
 		target = 'hashfsmount',
-		uselib = 'fuse glib-2.0',
+		uselib = 'fuse ' + common_libs,
 		install_path = '${PREFIX}/bin',
 		ccflags = ['-std=gnu99', '-g'],
-		defines = defines
+		defines = bld.env['defines']
 	)
 

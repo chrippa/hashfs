@@ -25,12 +25,19 @@ def set_options(opt):
 		opt.sub_options(dir)
 
 def configure(conf):
-	import Options
-
 	conf.check_tool('gcc')
+
 
 	for dir in subdirs:
 		conf.sub_config(dir)
 
 def build(bld):
+	import Options
+
+	bld.env['defines'] = []
+
+	if Options.options.debug:
+		bld.env['defines'] += ['DEBUG']
+
+
 	bld.add_subdirs(subdirs)
