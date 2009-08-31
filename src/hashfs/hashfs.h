@@ -15,6 +15,8 @@ struct hashfs_backend_St;
 struct hashfs_backend_desc_St;
 struct hashfs_db_St;
 struct hashfs_db_entry_St;
+struct hashfs_db_result_St;
+struct hashfs_db_query_St;
 struct hashfs_file_St;
 struct hashfs_set_St;
 
@@ -22,6 +24,8 @@ typedef struct hashfs_backend_St hashfs_backend_t;
 typedef struct hashfs_backend_desc_St hashfs_backend_desc_t;
 typedef struct hashfs_db_St hashfs_db_t;
 typedef struct hashfs_db_entry_St hashfs_db_entry_t;
+typedef struct hashfs_db_result_St hashfs_db_result_t;
+typedef struct hashfs_db_query_St hashfs_db_query_t;
 typedef struct hashfs_file_St hashfs_file_t;
 typedef struct hashfs_set_St hashfs_set_t;
 
@@ -54,6 +58,15 @@ struct hashfs_db_entry_St {
 	TCMAP *data;
 	gchar *pkey;
 };
+
+struct hashfs_db_result_St {
+	TCLIST *list;
+};
+
+struct hashfs_db_query_St {
+	TDBQRY *query;
+};
+
 
 struct hashfs_file_St {
 	gchar *filename;
@@ -90,12 +103,29 @@ gboolean hashfs_db_tran_abort (void);
 gboolean hashfs_db_tran_begin (void);
 gboolean hashfs_db_tran_commit (void);
 
+
 /* Database entry */
 hashfs_db_entry_t * hashfs_db_entry_new (const gchar *prefix, const gchar *id, const gchar *source, const gchar *type);
+hashfs_db_entry_t * hashfs_db_entry_new_from_key (const gchar *key);
 gboolean hashfs_db_entry_lookup (hashfs_db_entry_t *entry, const gchar *key, const gchar **out);
 void hashfs_db_entry_set (hashfs_db_entry_t *entry, const gchar *key, const gchar *value);
 gboolean hashfs_db_entry_put (hashfs_db_entry_t *entry);
 void hashfs_db_entry_destroy (hashfs_db_entry_t *entry);
+
+
+/* Database query */
+hashfs_db_query_t * hashfs_db_query_new (const gchar *querystr);
+hashfs_db_result_t * hashfs_db_query_result (hashfs_db_query_t *query);
+void hashfs_db_query_set_limit (hashfs_db_query_t *query, gint limit, gint skip);
+void hashfs_db_query_set_order (hashfs_db_query_t *query, gchar *key, gint mode);
+void hashfs_db_query_destroy (hashfs_db_query_t *query);
+
+
+/* Database result list */
+gint hashfs_db_result_num (hashfs_db_result_t *result);
+hashfs_db_entry_t * hashfs_db_result_get_entry (hashfs_db_result_t *result, gint index);
+void hashfs_db_result_destroy (hashfs_db_result_t *result);
+
 
 /* Set */
 hashfs_set_t * hashfs_set_new (const gchar *name, const gchar *source, const gchar *type);

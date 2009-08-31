@@ -2,11 +2,27 @@
 #include <string.h>
 #include <stdio.h>
 
-
 #include "hashfs.h"
 
+#define HASHFS_QUERY_PATTERN "([A-Za-z\\:]+)\\.(\\w+)\\((.*?)\\)"
+#define LENGTH(x) sizeof(x)/sizeof(x[0])
 
 static hashfs_db_t *db;
+
+typedef struct {
+	gint op;
+	gchar *name;
+} hashfs_db_query_cond_t;
+
+static hashfs_db_query_cond_t query_cond[] = {
+	{ TDBQCSTREQ,         "Equals" },
+	{ TDBQCSTRINC,        "Contains" },
+	{ TDBQCSTRBW,         "BeginsWith" },
+	{ TDBQCSTREQ,         "EndsWith" },
+	{ TDBQCSTRAND,        "IncludeAll" },
+	{ TDBQCSTROR,         "Include" },
+	{ TDBQCSTRRX,         "Regexp" },
+};
 
 gboolean
 hashfs_db_open (void)
@@ -88,20 +104,28 @@ hashfs_db_entry_t *
 hashfs_db_entry_new (const gchar *prefix, const gchar *id,
                      const gchar *source, const gchar *type)
 {
-	hashfs_db_entry_t *entry;
 	gchar *pkey, *md5;
-	TCMAP *curdata;
 
 	md5 = hashfs_md5_str(id);
 
-	if (!g_strcmp0(prefix, "set")) {
+	if (!g_strcmp0(prefix, "set"))
 		pkey = g_strdup_printf("%s:%s:%s:%s", prefix, source, type, md5);
-	} else {
+	else
 		pkey = g_strdup_printf("%s:%s", prefix, md5);
-	}
+
+	g_free(md5);
+
+	return hashfs_db_entry_new_from_key(pkey);
+}
+
+hashfs_db_entry_t *
+hashfs_db_entry_new_from_key (const gchar *pkey)
+{
+	hashfs_db_entry_t *entry;
+	TCMAP *curdata;
 
 	entry = g_new0(hashfs_db_entry_t, 1);
-	entry->pkey = pkey;
+	entry->pkey = g_strdup(pkey);
 
 	curdata = tctdbget(db->tdb, pkey, strlen(pkey));
 
@@ -111,8 +135,6 @@ hashfs_db_entry_new (const gchar *prefix, const gchar *id,
 		entry->data = tcmapnew();
 
 	HASHFS_DEBUG("Created entry with pkey: %s", pkey);
-
-	g_free(md5);
 
 	return entry;
 }
@@ -167,3 +189,123 @@ hashfs_db_entry_destroy (hashfs_db_entry_t *entry)
 
 	g_free(entry);
 }
+
+static gint
+hashfs_db_query_op (gchar *name)
+{
+	for (gint i = 0; i < LENGTH(query_cond); i++) {
+		if (g_strcmp0(name, query_cond[i].name) == 0)
+			return query_cond[i].op;
+	}
+
+	return -1;
+}
+
+
+hashfs_db_query_t *
+hashfs_db_query_new (const gchar *querystr)
+{
+	GRegex *regex;
+	GMatchInfo *match;
+	GError *error = NULL;
+	hashfs_db_query_t *query;
+
+	query = g_new0(hashfs_db_query_t, 1);
+	query->query = tctdbqrynew(db->tdb);
+
+	regex = g_regex_new(HASHFS_QUERY_PATTERN, 0, 0, &error);
+
+	if (error) {
+		HASHFS_DEBUG("Failed to create regex: %s", error->message);
+
+		g_error_free(error);
+
+		return NULL;
+	}
+
+	g_regex_match(regex, querystr, 0, &match);
+	while (g_match_info_matches(match)) {
+		gchar *key = g_match_info_fetch(match, 1);
+		gchar *func = g_match_info_fetch(match, 2);
+		gchar *val = g_match_info_fetch(match, 3);
+		gint op;
+
+		op = hashfs_db_query_op(func);
+
+		HASHFS_DEBUG("Adding query condition: %s.%s(%s)", key, func, val);
+
+		if (op >= 0) {
+			if (!g_strcmp0(key, "pkey"))
+				tctdbqryaddcond(query->query, "", op, val);
+			else
+				tctdbqryaddcond(query->query, key, op, val);
+		}
+
+		g_free(key); g_free(func); g_free(val);
+		g_match_info_next(match, NULL);
+	}
+
+	g_match_info_free(match);
+	g_regex_unref(regex);
+
+	return query;
+}
+
+void
+hashfs_db_query_set_limit (hashfs_db_query_t *query, gint limit, gint skip)
+{
+	tctdbqrysetlimit(query->query, limit, skip);
+}
+
+void
+hashfs_db_query_set_order (hashfs_db_query_t *query, gchar *key, gint mode)
+{
+	tctdbqrysetorder(query->query, key, mode);
+}
+
+hashfs_db_result_t *
+hashfs_db_query_result (hashfs_db_query_t *query)
+{
+	hashfs_db_result_t *result;
+
+	result = g_new0(hashfs_db_result_t, 1);
+	result->list = tctdbqrysearch(query->query);
+
+	return result;
+}
+
+void
+hashfs_db_query_destroy (hashfs_db_query_t *query)
+{
+	if (query->query)
+		tctdbqrydel(query->query);
+
+	g_free(query);
+}
+
+gint
+hashfs_db_result_num (hashfs_db_result_t *result)
+{
+	return (gint) tclistnum(result->list);
+}
+
+hashfs_db_entry_t *
+hashfs_db_result_get_entry (hashfs_db_result_t *result, gint index)
+{
+	const gchar *key;
+	gint len;
+
+	key = tclistval(result->list, index, &len);
+
+	return hashfs_db_entry_new_from_key(key);
+}
+
+void
+hashfs_db_result_destroy (hashfs_db_result_t *result)
+{
+	if (result->list)
+		tclistdel(result->list);
+
+	g_free(result);
+}
+

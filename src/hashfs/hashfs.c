@@ -43,7 +43,7 @@ hashfs_hash_file (hashfs_backend_t *backend, gchar *path)
 	if (hashfs_backend_glob_try(backend, path)) {
 		hashfs_file_t *file;
 
-		HASHFS_LOG("Hashing file: %s", hashfs_basename(path));
+		HASHFS_LOG("Handling file: %s", hashfs_basename(path));
 
 		file = hashfs_file_new(path, backend);
 		hashfs_backend_file(backend, file);
@@ -60,7 +60,7 @@ hashfs_hash_dir (hashfs_backend_t *backend, gchar *path)
 	const gchar *filename;
 	gchar *fullpath;
 
-	HASHFS_LOG("Hashing dir: %s", path);
+	HASHFS_LOG("Searching directory: %s", path);
 
 	error = NULL;
 	dir = g_dir_open(path, 0, &error);
