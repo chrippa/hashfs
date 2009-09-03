@@ -165,6 +165,53 @@ hashfs_db_entry_lookup (hashfs_db_entry_t *entry, const gchar *key,
 	return TRUE;
 }
 
+static gboolean
+eval_cb (const GMatchInfo *info, GString *res, gpointer data)
+{
+	const gchar *tmp;
+	gchar *match;
+
+	match = g_match_info_fetch(info, 1);
+
+	if (hashfs_db_entry_lookup(data, match, &tmp))
+		g_string_append(res, tmp);
+
+	g_free(match);
+
+	return FALSE;
+}
+
+gchar *
+hashfs_db_entry_format (hashfs_db_entry_t *entry, const gchar *format)
+{
+	GRegex *regex;
+	GMatchInfo *match;
+	GError *error = NULL;
+	gchar *rval;
+
+	regex = g_regex_new("\\$(\\w+)", 0, 0, &error);
+
+	if (error) {
+		HASHFS_DEBUG("Failed to create regex: %s", error->message);
+
+		g_error_free(error);
+
+		return NULL;
+	}
+
+	rval = g_regex_replace_eval(regex, format, -1, 0, 0, eval_cb, entry, NULL);
+
+	g_regex_unref(regex);
+
+	return rval;
+}
+
+const gchar *
+hashfs_db_entry_pkey (hashfs_db_entry_t *entry)
+{
+	return entry->pkey;
+}
+
 gboolean
 hashfs_db_entry_put (hashfs_db_entry_t *entry)
 {

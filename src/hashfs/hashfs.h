@@ -108,6 +108,8 @@ gboolean hashfs_db_tran_commit (void);
 hashfs_db_entry_t * hashfs_db_entry_new (const gchar *prefix, const gchar *id, const gchar *source, const gchar *type);
 hashfs_db_entry_t * hashfs_db_entry_new_from_key (const gchar *key);
 gboolean hashfs_db_entry_lookup (hashfs_db_entry_t *entry, const gchar *key, const gchar **out);
+gchar * hashfs_db_entry_format (hashfs_db_entry_t *entry, const gchar *format);
+const gchar * hashfs_db_entry_pkey (hashfs_db_entry_t *entry);
 void hashfs_db_entry_set (hashfs_db_entry_t *entry, const gchar *key, const gchar *value);
 gboolean hashfs_db_entry_put (hashfs_db_entry_t *entry);
 void hashfs_db_entry_destroy (hashfs_db_entry_t *entry);

@@ -21,6 +21,7 @@ hashfs_file_new (const gchar *filename, hashfs_backend_t *backend)
 
 	hashfs_db_tran_begin();
 	hashfs_db_entry_set(file->entry, "path", filename);
+	hashfs_db_entry_set(file->entry, "basename", hashfs_basename(filename));
 
 	return file;
 }
