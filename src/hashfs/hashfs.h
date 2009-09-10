@@ -120,6 +120,7 @@ void hashfs_db_entry_destroy (hashfs_db_entry_t *entry);
 /* Database query */
 hashfs_db_query_t * hashfs_db_query_new (const gchar *querystr);
 hashfs_db_result_t * hashfs_db_query_result (hashfs_db_query_t *query);
+hashfs_db_result_t * hashfs_db_query_group (hashfs_db_query_t *query, const gchar *groupby);
 void hashfs_db_query_set_limit (hashfs_db_query_t *query, gint limit, gint skip);
 void hashfs_db_query_set_order (hashfs_db_query_t *query, gchar *key, gint mode);
 void hashfs_db_query_destroy (hashfs_db_query_t *query);

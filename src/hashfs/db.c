@@ -334,6 +334,35 @@ hashfs_db_query_result (hashfs_db_query_t *query)
 	return result;
 }
 
+hashfs_db_result_t *
+hashfs_db_query_group (hashfs_db_query_t *query, const gchar *groupby)
+{
+	hashfs_db_result_t *newres, *origres;
+
+	origres = hashfs_db_query_result(query);
+	newres = g_new0(hashfs_db_result_t, 1);
+	newres->list = tclistnew();
+
+	for (gint i = 0; i < hashfs_db_result_num(origres); i++) {
+		hashfs_db_entry_t *entry;
+		const gchar *val;
+
+		entry = hashfs_db_result_get_entry(origres, i);
+
+		if (hashfs_db_entry_lookup(entry, groupby, &val)) {
+			if (tclistlsearch(newres->list, val, strlen(val)) < 0) {
+				tclistpush2(newres->list, val);
+			}
+		}
+
+		hashfs_db_entry_destroy(entry);
+	}
+
+	hashfs_db_result_destroy(origres);
+
+	return newres;
+}
+
 void
 hashfs_db_query_destroy (hashfs_db_query_t *query)
 {

@@ -19,8 +19,6 @@ static gchar * hashfs_mounts_get (const gchar *path);
 static gboolean hashfs_mounts_exists (const gchar *path);
 static void hashfs_mounts_init (void);
 static void hashfs_mounts_destroy (void);
-static void hashfs_fuse_listdir (const gchar *squery, const gchar *format,
-                                 gpointer buf, fuse_fill_dir_t filler);
 
 static void
 test_query (gchar *querystr)
@@ -29,19 +27,16 @@ test_query (gchar *querystr)
 	hashfs_db_result_t *result;
 
 	query = hashfs_db_query_new(querystr);
-	result = hashfs_db_query_result(query);
+//	result = hashfs_db_query_result(query);
+	result = hashfs_db_query_group(query, "group");
 
 	printf("num results: %d\n", hashfs_db_result_num(result));
 
 	for (gint i = 0; i < hashfs_db_result_num(result); i++) {
 		hashfs_db_entry_t *entry;
-		gchar *tmp;
 
 		entry = hashfs_db_result_get_entry(result, i);
-		tmp = hashfs_db_entry_format(entry, "$basename,$path");
-		printf("%s\n", tmp);
-
-		g_free(tmp);
+		printf("result: %s\n", hashfs_db_entry_pkey(entry));
 
 		hashfs_db_entry_destroy(entry);
 	}
@@ -101,15 +96,20 @@ parse_schema (gchar *schema)
 }
 
 static hashfs_db_entry_t *
-resolve_path (gchar *squery, gchar *sdisplay, gchar *path)
+resolve_path (gchar *squery, gchar *groupby, gchar *sdisplay, gchar *path)
 {
 	hashfs_db_query_t *query;
 	hashfs_db_result_t *result;
 	hashfs_db_entry_t *entry;
 
 	query = hashfs_db_query_new(squery);
-	result = hashfs_db_query_result(query);
+	if (groupby != NULL)
+		result = hashfs_db_query_group(query, groupby);
+	else
+		result = hashfs_db_query_result(query);
 	entry = NULL;
+
+	printf("resolve_path, q=%s, num_results=%d\n", squery, hashfs_db_result_num(result));
 
 	for (gint i = 0; i < hashfs_db_result_num(result); i++) {
 		gchar *display;
@@ -147,7 +147,8 @@ eval_cb (const GMatchInfo *info, GString *res, gpointer data)
 	nth = atoi(n);
 
 	if (g_strcmp0(var, "prev") == 0) {
-		GList *item = g_list_nth_prev(data, nth - 1);
+		GList *last = g_list_last(data);
+		GList *item = g_list_nth_prev(last, nth - 1);
 
 		if (item) {
 			const gchar *val;
@@ -212,8 +213,9 @@ resolve_paths (const gchar *path)
 		GHashTable *hash = parse_schema(sschema[i]);
 		gchar *q = g_hash_table_lookup(hash, "q");
 		gchar *d = g_hash_table_lookup(hash, "d");
+		gchar *g = g_hash_table_lookup(hash, "g");
 		gchar *query = prepare_query(q, entries);
-		hashfs_db_entry_t *entry = resolve_path(query, d, spath[i]);
+		hashfs_db_entry_t *entry = resolve_path(query, g, d, spath[i]);
 
 		if (entry) {
 			entries = g_list_append(entries, entry);
@@ -336,14 +338,19 @@ hashfs_fuse_getattr (const gchar *path, struct stat *stats)
 }
 
 static void
-hashfs_fuse_listdir (const gchar *squery, const gchar *format,
-                     gpointer buf, fuse_fill_dir_t filler)
+hashfs_fuse_listdir (const gchar *squery, const gchar *groupby,
+                     const gchar *format, gpointer buf,
+                     fuse_fill_dir_t filler)
 {
 	hashfs_db_query_t *query;
 	hashfs_db_result_t *result;
 
 	query = hashfs_db_query_new(squery);
-	result = hashfs_db_query_result(query);
+
+	if (groupby != NULL)
+		result = hashfs_db_query_group(query, groupby);
+	else
+		result = hashfs_db_query_result(query);
 
 	printf("listdir, num results: %d, q=%s, d=%s\n", hashfs_db_result_num(result), squery, format);
 	for (gint i = 0; i < hashfs_db_result_num(result); i++) {
@@ -398,14 +405,15 @@ hashfs_fuse_readdir (const gchar *path, gpointer buf, fuse_fill_dir_t filler,
 			GHashTable *hash = parse_schema(sschema[i+1]);
 			gchar *q = g_hash_table_lookup(hash, "q");
 			gchar *d = g_hash_table_lookup(hash, "d");
+			gchar *g = g_hash_table_lookup(hash, "g");
 			gchar *query = prepare_query(q, entries);
 
 			if ((i + 1) == g_strv_length(spath)) {
-				hashfs_fuse_listdir(query, d, buf, filler);
+				hashfs_fuse_listdir(query, g, d, buf, filler);
 				break;
 			}
 
-			hashfs_db_entry_t *entry = resolve_path(query, d, spath[i+1]);
+			hashfs_db_entry_t *entry = resolve_path(query, g, d, spath[i+1]);
 
 			if (entry)
 				entries = g_list_append(entries, entry);
@@ -493,9 +501,14 @@ main (gint argc, gchar **argv)
 	hashfs_db_init(TRUE);
 
 	hashfs_mounts_init();
-	hashfs_mounts_add("by-name", "(q=\"pkey.BeginsWith(set:anidb:anime)\", d=\"$romaji [$eps]\")/(q=\"pkey.BeginsWith(file:), anime.Equals($prev[1].pkey)\", d=\"$anime_romaji - $ep_number [$group_name].$ext\")");
-	hashfs_mounts_add("by-group", "(q=\"pkey.BeginsWith(set:anidb:group)\", d=\"$name\")/(q=\"pkey.BeginsWith(file:), group.Equals($prev[1].pkey)\", d=\"$basename\")");
+	hashfs_mounts_add("by-name", "q=\"pkey.BeginsWith(set:anidb:anime)\", d=\"$romaji [$eps]\"/"
+	                             "q=\"pkey.BeginsWith(file:), anime.Equals($prev[1].pkey)\", d=\"$anime_romaji - $ep_number [$group_name].$ext\"");
+	hashfs_mounts_add("by-group", "q=\"pkey.BeginsWith(set:anidb:group)\", d=\"$name\")/"
+	                              "q=\"pkey.BeginsWith(file:), group.Equals($prev[1].pkey)\", g=\"anime\", d=\"$romaji\")/"
+	                              "q=\"pkey.BeginsWith(file:), group.Equals($prev[2].pkey), anime.Equals($prev[1].pkey)\", d=\"$anime_romaji - $ep_number [$group_name].$ext\"");
+
 	rval = fuse_main(argc, argv, &hashfs_fuse_operations, NULL);
+
 
 	hashfs_config_destroy();
 	hashfs_db_destroy();
