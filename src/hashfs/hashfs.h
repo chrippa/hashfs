@@ -52,6 +52,8 @@ struct hashfs_backend_desc_St {
 
 struct hashfs_db_St {
 	TCTDB *tdb;
+	gchar *path;
+	gint flags;
 };
 
 struct hashfs_db_entry_St {
@@ -87,16 +89,16 @@ struct hashfs_set_St {
 
 /* Config */
 GKeyFile * hashfs_config_keyfile (void);
-void hashfs_config_load (void);
-void hashfs_config_save (void);
+void hashfs_config_init (void);
+void hashfs_config_destroy (void);
 gboolean hashfs_config_property_exists (const gchar *group, const gchar *key);
 void hashfs_config_property_lookup (const gchar *group, const gchar *key, gchar **out);
 void hashfs_config_property_set (const gchar *group, const gchar *key, const gchar *value);
 
 
 /* Database */
-gboolean hashfs_db_open (void);
-void hashfs_db_close (void);
+gboolean hashfs_db_init (gboolean readonly);
+void hashfs_db_destroy (void);
 gchar * hashfs_db_error (void);
 
 gboolean hashfs_db_tran_abort (void);

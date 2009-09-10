@@ -25,19 +25,23 @@ static hashfs_db_query_cond_t query_cond[] = {
 };
 
 gboolean
-hashfs_db_open (void)
+hashfs_db_init (gboolean readonly)
 {
 	gchar *path;
+	gint flags;
 	gboolean rval;
 
 	g_return_val_if_fail(db == NULL, FALSE);
 
+	path = g_build_filename(g_get_user_config_dir(), "hashfs", "metadata.tct", NULL);
+	flags = readonly ? TDBOREADER | TDBONOLCK : TDBOWRITER | TDBOCREAT;
+
 	db = g_new0(hashfs_db_t, 1);
 	db->tdb = tctdbnew();
+	db->path = path;
+	db->flags = flags;
 
-	path = g_build_filename(g_get_user_config_dir(), "hashfs", "metadata.tct", NULL);
-
-	if (!tctdbopen(db->tdb, path, TDBOWRITER | TDBOCREAT)) {
+	if (!tctdbopen(db->tdb, path, flags)) {
 		HASHFS_DEBUG("Unable to open DB: %s", hashfs_db_error());
 
 		rval = FALSE;
@@ -47,13 +51,18 @@ hashfs_db_open (void)
 		rval = TRUE;
 	}
 
-	g_free(path);
-
 	return rval;
 }
 
+static void
+hashfs_db_reload (void)
+{
+	tctdbclose(db->tdb);
+	tctdbopen(db->tdb, db->path, db->flags);
+}
+
 void
-hashfs_db_close (void)
+hashfs_db_destroy (void)
 {
 	g_return_if_fail(db != NULL);
 
@@ -65,6 +74,7 @@ hashfs_db_close (void)
 
 	tctdbdel(db->tdb);
 
+	g_free(db->path);
 	free(db);
 }
 
@@ -127,6 +137,7 @@ hashfs_db_entry_new_from_key (const gchar *pkey)
 	entry = g_new0(hashfs_db_entry_t, 1);
 	entry->pkey = g_strdup(pkey);
 
+	hashfs_db_reload();
 	curdata = tctdbget(db->tdb, pkey, strlen(pkey));
 
 	if (curdata != NULL)
@@ -314,6 +325,8 @@ hashfs_db_result_t *
 hashfs_db_query_result (hashfs_db_query_t *query)
 {
 	hashfs_db_result_t *result;
+
+	hashfs_db_reload();
 
 	result = g_new0(hashfs_db_result_t, 1);
 	result->list = tctdbqrysearch(query->query);

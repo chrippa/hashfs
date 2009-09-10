@@ -193,8 +193,9 @@ main (gint argc, gchar **argv)
 {
 	hashfs_backend_t *backend;
 
-	hashfs_config_load();
-	hashfs_db_open();
+	hashfs_config_init();
+	if (!hashfs_db_init(FALSE))
+		HASHFS_ERROR("Unable to open database");
 
 	if (g_module_supported()) {
 		hashfs_backends_load("/usr/local/lib/hashfs");
@@ -212,9 +213,8 @@ main (gint argc, gchar **argv)
 
 
 	hashfs_backends_destroy();
-
-	hashfs_config_save();
-	hashfs_db_close();
+	hashfs_config_destroy();
+	hashfs_db_destroy();
 
 	return 0;
 }

@@ -35,7 +35,7 @@ hashfs_config_keyfile (void)
 }
 
 void
-hashfs_config_load (void)
+hashfs_config_init (void)
 {
 	GError *error = NULL;
 	gchar *configfile;
@@ -58,7 +58,7 @@ hashfs_config_load (void)
 }
 
 void
-hashfs_config_save (void)
+hashfs_config_destroy (void)
 {
 	gchar *configfile, *data;
 	FILE *file;

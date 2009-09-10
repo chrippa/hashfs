@@ -17,7 +17,7 @@ GHashTable *mounts;
 static void hashfs_mounts_add (const gchar *path, const gchar *schema);
 static gchar * hashfs_mounts_get (const gchar *path);
 static gboolean hashfs_mounts_exists (const gchar *path);
-static void hashfs_mounts_load (void);
+static void hashfs_mounts_init (void);
 static void hashfs_mounts_destroy (void);
 static void hashfs_fuse_listdir (const gchar *squery, const gchar *format,
                                  gpointer buf, fuse_fill_dir_t filler);
@@ -260,7 +260,7 @@ hashfs_mounts_exists (const gchar *path)
 }
 
 static void
-hashfs_mounts_load (void)
+hashfs_mounts_init (void)
 {
 	if (!mounts)
 		mounts = g_hash_table_new(g_str_hash, g_str_equal);
@@ -489,17 +489,17 @@ main (gint argc, gchar **argv)
 {
 	gint rval;
 
-	hashfs_config_load();
-	hashfs_db_open();
-	hashfs_mounts_load();
+	hashfs_config_init();
+	hashfs_db_init(TRUE);
 
-
-	hashfs_mounts_add("by-name", "(q=\"pkey.BeginsWith(set:anidb:anime)\", d=\"$kanji [$eps]\")/(q=\"pkey.BeginsWith(file:), anime.Equals($prev[1].pkey)\", d=\"$anime_kanji - $ep_number - $ep_kanji [$group_name].$ext\")");
+	hashfs_mounts_init();
+	hashfs_mounts_add("by-name", "(q=\"pkey.BeginsWith(set:anidb:anime)\", d=\"$romaji [$eps]\")/(q=\"pkey.BeginsWith(file:), anime.Equals($prev[1].pkey)\", d=\"$anime_romaji - $ep_number [$group_name].$ext\")");
 	hashfs_mounts_add("by-group", "(q=\"pkey.BeginsWith(set:anidb:group)\", d=\"$name\")/(q=\"pkey.BeginsWith(file:), group.Equals($prev[1].pkey)\", d=\"$basename\")");
 	rval = fuse_main(argc, argv, &hashfs_fuse_operations, NULL);
 
-	hashfs_config_save();
-	hashfs_db_close();
+	hashfs_config_destroy();
+	hashfs_db_destroy();
+	hashfs_mounts_destroy();
 
 	return rval;
 }
