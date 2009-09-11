@@ -1,0 +1,18 @@
+-- Compile/install
+  $ ./waf configure
+  $ ./waf
+  # ./waf install
+
+
+-- Configure anidb backend
+  $ hashfs config anidb.username username
+  $ hashfs config anidb.password password
+  $ hashfs config anidb.local_port port
+
+
+-- Update backend metadata
+  $ hashfs update anidb /path
+
+
+-- Mounting
+  $ hashfsmount /path/to/mountpoint
